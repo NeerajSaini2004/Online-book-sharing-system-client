@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 export const RoleSelectionPage = () => {
   const [selectedRole, setSelectedRole] = useState('student');
   const navigate = useNavigate();
-  const { updateuser } = useAuth();
+  const { updateUser } = useAuth();
 
   const roles = [
     {
@@ -45,7 +45,7 @@ export const RoleSelectionPage = () => {
   const handleContinue = () => {
     if (!selectedRole) return;
     
-    updateuser({ role: selectedRole });
+    updateUser({ role: selectedRole });
     
     if (selectedRole === 'library') {
       navigate('/kyc-upload');
