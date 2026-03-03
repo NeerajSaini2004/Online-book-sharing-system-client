@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="description" content="BookShare - Academic Marketplace" />
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <title>BookShare - Academic Marketplace</title>
+    <script>
+      // Suppress all console errors and warnings
+      window.addEventListener('error', function(e) {
+        if (e.message && (e.message.includes('runtime.lastError') || e.message.includes('Extension'))) {
+          e.preventDefault();
+          return false;
+        }
+      });
+      
+      // Override console methods
+      const originalConsole = { ...console };
+      console.warn = function(...args) {
+        const message = args[0];
+        if (typeof message === 'string' && (
+          message.includes('React DevTools') ||
+          message.includes('runtime.lastError') ||
+          message.includes('Extension')
+        )) return;
+        originalConsole.warn.apply(console, args);
+      };
+      
+      console.error = function(...args) {
+        const message = args[0];
+        if (typeof message === 'string' && (
+          message.includes('runtime.lastError') ||
+          message.includes('Extension')
+        )) return;
+        originalConsole.error.apply(console, args);
+      };
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

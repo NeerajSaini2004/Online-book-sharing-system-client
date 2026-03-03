@@ -1,0 +1,194 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply text-secondary-900 bg-white antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', system-ui, sans-serif;
+    @apply font-semibold;
+  }
+}
+
+@layer components {
+  .btn-gradient {
+    @apply bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 hover:from-primary-700 hover:via-primary-800 hover:to-primary-900;
+  }
+  
+  .card-hover {
+    @apply hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 transform-gpu;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-accent {
+    @apply bg-gradient-to-r from-accent-500 to-accent-700 bg-clip-text text-transparent;
+  }
+  
+  .glass-effect {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+  
+  .glass-dark {
+    @apply bg-black/20 backdrop-blur-md border border-white/10;
+  }
+  
+  .gradient-bg {
+    @apply bg-gradient-to-br from-primary-50 via-white to-secondary-50;
+  }
+  
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  }
+  
+  .shadow-medium {
+    box-shadow: 0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 30px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  .shadow-large {
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 20px 50px -10px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  .animate-pulse-soft {
+    animation: pulse-soft 4s ease-in-out infinite;
+  }
+  
+  .animate-bounce-soft {
+    animation: bounce-soft 8s ease-in-out infinite;
+  }
+  
+  .animate-gradient {
+    animation: gradient 3s ease infinite;
+    background-size: 200% 200%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(2deg);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.6);
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px);
+  }
+  75% {
+    transform: translateY(5px) translateX(-5px);
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Enhanced scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-secondary-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gradient-to-b from-primary-400 to-primary-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply from-primary-500 to-primary-700;
+}
+
+/* Enhanced selection styles */
+::selection {
+  @apply bg-primary-200 text-primary-900;
+}
+
+::-moz-selection {
+  @apply bg-primary-200 text-primary-900;
+}
+
+/* Focus styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-opacity-50;
+}
+
+/* Loading skeleton */
+.skeleton {
+  @apply bg-gradient-to-r from-secondary-200 via-secondary-100 to-secondary-200 animate-pulse;
+  background-size: 200% 100%;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  @apply transition-colors duration-200;
+}
+
+button, a, input, textarea, select {
+  @apply transition-all duration-200;
+}
+
+/* Enhanced input styles */
+input, textarea, select {
+  @apply focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200;
+}
+
+/* Custom checkbox and radio styles */
+input[type="checkbox"], input[type="radio"] {
+  @apply focus:ring-primary-500 text-primary-600;
+}
