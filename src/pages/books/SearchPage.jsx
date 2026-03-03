@@ -265,7 +265,7 @@ export const SearchPage = () => {
                       <div className="aspect-[3/4] bg-gray-200 rounded-xl mb-4 overflow-hidden">
                         {book.images && book.images.length > 0 ? (
                           <img 
-                            src={`http://localhost:5001${book.images[0].url}`}
+                            src={`https://online-book-sharing-system-backend.onrender.com${book.images[0].url}`}
                             alt={book.title}
                             className="w-full h-full object-cover"
                             onError={(e) => {

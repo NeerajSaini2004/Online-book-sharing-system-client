@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://online-book-sharing-system-backend.onrender.com/api';
 
 class UserService {
   async updateProfile(profileData) {

@@ -82,7 +82,7 @@ frontend/
 
 ## 🔌 API Endpoints
 
-### Base URL: `http://localhost:5001/api/orders`
+### Base URL: `https://online-book-sharing-system-backend.onrender.com/api/orders`
 
 All routes require authentication token in header:
 ```
@@ -586,7 +586,7 @@ NODE_ENV=development
 
 ```javascript
 // Get order
-const response = await fetch(`http://localhost:5001/api/orders/${orderId}`, {
+const response = await fetch(`https://online-book-sharing-system-backend.onrender.com/api/orders/${orderId}`, {
   headers: {
     'Authorization': `Bearer ${token}`
   }
@@ -594,7 +594,7 @@ const response = await fetch(`http://localhost:5001/api/orders/${orderId}`, {
 const data = await response.json();
 
 // Mark as shipped
-const response = await fetch(`http://localhost:5001/api/orders/ship/${orderId}`, {
+const response = await fetch(`https://online-book-sharing-system-backend.onrender.com/api/orders/ship/${orderId}`, {
   method: 'PUT',
   headers: {
     'Authorization': `Bearer ${token}`
@@ -603,7 +603,7 @@ const response = await fetch(`http://localhost:5001/api/orders/ship/${orderId}`,
 const data = await response.json();
 
 // Confirm delivery
-const response = await fetch(`http://localhost:5001/api/orders/confirm/${orderId}`, {
+const response = await fetch(`https://online-book-sharing-system-backend.onrender.com/api/orders/confirm/${orderId}`, {
   method: 'PUT',
   headers: {
     'Authorization': `Bearer ${token}`

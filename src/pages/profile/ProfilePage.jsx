@@ -64,7 +64,7 @@ export const ProfilePage = () => {
         })
       };
 
-      const response = await fetch('http://localhost:5001/api/users/profile', {
+      const response = await fetch('https://online-book-sharing-system-backend.onrender.com/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ export const ProfilePage = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/users/password', {
+      const response = await fetch('https://online-book-sharing-system-backend.onrender.com/api/users/password', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

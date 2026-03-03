@@ -3,8 +3,8 @@
 ## Backend Status: ✅ WORKING
 - **Port**: 5001
 - **Database**: Connected to MongoDB
-- **Health Check**: ✅ http://localhost:5001/health
-- **API Test**: ✅ http://localhost:5001/api/test
+- **Health Check**: ✅ https://online-book-sharing-system-backend.onrender.com/health
+- **API Test**: ✅ https://online-book-sharing-system-backend.onrender.com/api/test
 
 ## Frontend Status: ✅ WORKING  
 - **Port**: 3000

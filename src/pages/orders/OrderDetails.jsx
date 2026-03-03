@@ -15,7 +15,7 @@ export const OrderDetails = () => {
   const fetchOrder = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/orders/${id}`, {
+      const response = await fetch(`https://online-book-sharing-system-backend.onrender.com/api/orders/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -32,7 +32,7 @@ export const OrderDetails = () => {
   const handleConfirmDelivery = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/orders/confirm/${id}`, {
+      const response = await fetch(`https://online-book-sharing-system-backend.onrender.com/api/orders/confirm/${id}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });

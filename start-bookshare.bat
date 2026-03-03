@@ -59,8 +59,8 @@ echo.
 echo ✅ BookShare is starting up!
 echo.
 echo 🌐 Frontend: http://localhost:3000
-echo 🚀 Backend:  http://localhost:5001
-echo 📊 Health:   http://localhost:5001/health
+echo 🚀 Backend:  https://online-book-sharing-system-backend.onrender.com
+echo 📊 Health:   https://online-book-sharing-system-backend.onrender.com/health
 echo.
 echo Test Accounts:
 echo 👑 Admin:   admin@test.com / admin123

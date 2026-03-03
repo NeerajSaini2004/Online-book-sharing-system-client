@@ -41,7 +41,7 @@ export const BookDetailPage = () => {
   const fetchBookDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5001/api/listings/${id}`);
+      const response = await fetch(`https://online-book-sharing-system-backend.onrender.com/api/listings/${id}`);
       const data = await response.json();
       if (data.success) {
         setBook(data.data);
@@ -66,7 +66,7 @@ export const BookDetailPage = () => {
     if (paymentMethod === 'online') {
       try {
         // Create order from backend
-        const response = await fetch('http://localhost:5001/api/payment/create-order', {
+        const response = await fetch('https://online-book-sharing-system-backend.onrender.com/api/payment/create-order', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -89,7 +89,7 @@ export const BookDetailPage = () => {
             order_id: data.order.id,
             handler: async function (response) {
               // Verify payment
-              const verifyResponse = await fetch('http://localhost:5001/api/payment/verify', {
+              const verifyResponse = await fetch('https://online-book-sharing-system-backend.onrender.com/api/payment/verify', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
@@ -226,7 +226,7 @@ export const BookDetailPage = () => {
     );
   }
 
-  const bookImages = book.images?.map(img => `http://localhost:5001${img.url}`) || ['https://via.placeholder.com/300x400'];
+  const bookImages = book.images?.map(img => `https://online-book-sharing-system-backend.onrender.com${img.url}`) || ['https://via.placeholder.com/300x400'];
 
 
 

@@ -252,7 +252,7 @@ export const StudentDashboard = () => {
                   {myListings.slice(0, 2).map((listing) => (
                     <div key={listing._id} className="flex items-center space-x-3 p-3 bg-secondary-50 rounded-lg shadow-soft">
                       <div className="w-12 h-16 bg-secondary-200 rounded overflow-hidden flex-shrink-0">
-                        <img src={listing.images?.[0]?.url ? `http://localhost:5001${listing.images[0].url}` : 'https://via.placeholder.com/300x400'} alt={listing.title} className="w-full h-full object-cover" />
+                        <img src={listing.images?.[0]?.url ? `https://online-book-sharing-system-backend.onrender.com${listing.images[0].url}` : 'https://via.placeholder.com/300x400'} alt={listing.title} className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold text-secondary-900">{listing.title}</h4>
@@ -317,7 +317,7 @@ export const StudentDashboard = () => {
                 {myListings.map((listing) => (
                   <div key={listing._id} className="flex items-center space-x-4 p-4 border border-secondary-200 rounded-xl shadow-soft hover:shadow-medium transition-all duration-200">
                     <div className="w-16 h-20 bg-secondary-200 rounded overflow-hidden flex-shrink-0">
-                      <img src={listing.images?.[0]?.url ? `http://localhost:5001${listing.images[0].url}` : 'https://via.placeholder.com/300x400'} alt={listing.title} className="w-full h-full object-cover" />
+                      <img src={listing.images?.[0]?.url ? `https://online-book-sharing-system-backend.onrender.com${listing.images[0].url}` : 'https://via.placeholder.com/300x400'} alt={listing.title} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold text-secondary-900">{listing.title}</h4>

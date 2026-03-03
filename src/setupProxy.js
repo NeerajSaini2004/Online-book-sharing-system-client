@@ -4,7 +4,7 @@ module.exports = function(app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'http://localhost:5001',
+      target: 'https://online-book-sharing-system-backend.onrender.com',
       changeOrigin: true,
     })
   );

@@ -23,7 +23,7 @@ start "BookShare Frontend" cmd /k "npm start"
 
 echo.
 echo Both servers are starting...
-echo Backend: http://localhost:5001
+echo Backend: https://online-book-sharing-system-backend.onrender.com
 echo Frontend: http://localhost:3000
 echo.
 pause
