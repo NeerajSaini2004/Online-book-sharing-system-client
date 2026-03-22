@@ -17,7 +17,8 @@ export const UploadNotesPage = () => {
     board: '',
     description: '',
     price: '',
-    pages: ''
+    pages: '',
+    isFree: false
   });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -28,10 +29,8 @@ export const UploadNotesPage = () => {
   const boards = ['CBSE', 'ICSE', 'State Board', 'JEE Main', 'JEE Advanced', 'NEET'];
 
   const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value, type, checked } = e.target;
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
   };
 
   const handleFileChange = (e) => {
@@ -69,9 +68,17 @@ export const UploadNotesPage = () => {
     setLoading(true);
     
     try {
-      await apiService.uploadNotes(formData);
+      const data = new FormData();
+      Object.entries(formData).forEach(([key, val]) => data.append(key, val));
+      data.append('notesFile', file);
+      const token = localStorage.getItem('token');
+      await fetch(`https://online-book-sharing-system-backend.onrender.com/api/notes/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: data
+      });
       setToast({ type: 'success', message: 'Notes uploaded successfully!' });
-      setFormData({ title: '', subject: '', class: '', board: '', description: '', price: '', pages: '' });
+      setFormData({ title: '', subject: '', class: '', board: '', description: '', price: '', pages: '', isFree: false });
       setFile(null);
     } catch (error) {
       setToast({
@@ -165,15 +172,34 @@ export const UploadNotesPage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Price (₹) *
                 </label>
-                <Input
-                  name="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  placeholder="Enter price"
-                  min="0"
-                  required
-                />
+                <div className="flex items-center gap-3 mb-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="isFree"
+                      checked={formData.isFree}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 text-primary-600 rounded"
+                    />
+                    <span className="text-sm font-medium text-green-600">Make this FREE</span>
+                  </label>
+                </div>
+                {!formData.isFree && (
+                  <Input
+                    name="price"
+                    type="number"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    placeholder="Enter price"
+                    min="1"
+                    required
+                  />
+                )}
+                {formData.isFree && (
+                  <div className="px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-green-700 font-medium">
+                    ✓ Free — anyone can download directly
+                  </div>
+                )}
               </div>
 
               <div>

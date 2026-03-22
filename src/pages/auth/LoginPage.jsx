@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { EnvelopeIcon, PhoneIcon, EyeIcon, EyeSlashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, PhoneIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { GoogleLogin } from '@react-oauth/google';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
 import { useAuth } from '../../context/AuthContext';
 
 export const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const [loginMethod, setLoginMethod] = useState('email');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,23 @@ export const LoginPage = () => {
   const navigate = useNavigate();
 
 
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await googleLogin(credentialResponse.credential);
+      if (result.success) {
+        navigate('/');
+      } else {
+        setError(result.error || 'Google login failed');
+      }
+    } catch {
+      setError('Google login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -42,12 +60,6 @@ export const LoginPage = () => {
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
-  const socialLogins = [
-    { name: 'Google', color: 'bg-red-500', icon: 'G' },
-    { name: 'Facebook', color: 'bg-blue-600', icon: 'f' },
-    { name: 'LinkedIn', color: 'bg-blue-700', icon: 'in' }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-100 flex items-center justify-center p-4">
@@ -155,15 +167,13 @@ export const LoginPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            {socialLogins.map((social) => (
-              <button
-                key={social.name}
-                className={`${social.color} text-white py-3 rounded-xl font-medium hover:opacity-90 transition-opacity`}
-              >
-                {social.icon}
-              </button>
-            ))}
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Google login failed')}
+              useOneTap
+              width="368"
+            />
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">

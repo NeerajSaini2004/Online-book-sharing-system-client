@@ -9,7 +9,7 @@ class ApiService {
     };
 
     if (includeAuth) {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token') || localStorage.getItem('smartbook_token');
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }
@@ -63,7 +63,7 @@ class ApiService {
   async getListings(params) {
     const queryString = params ? new URLSearchParams(params).toString() : '';
     const response = await fetch(`${API_BASE_URL}/listings?${queryString}`, {
-      headers: this.getHeaders(),
+      headers: this.getHeaders(false),
     });
     return this.handleResponse(response);
   }
@@ -92,7 +92,7 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}/listings`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
+        Authorization: `Bearer ${localStorage.getItem('token') || localStorage.getItem('smartbook_token')}`
       },
       body: formData,
     });
@@ -114,7 +114,7 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}/listings/${id}`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
+        Authorization: `Bearer ${localStorage.getItem('token') || localStorage.getItem('smartbook_token')}`
       },
       body: formData,
     });

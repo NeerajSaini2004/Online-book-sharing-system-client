@@ -39,6 +39,7 @@ export const NotesPage = () => {
         board: note.board,
         author: note.author.name,
         price: note.price,
+        isFree: note.isFree,
         rating: note.rating,
         downloads: note.downloads,
         pages: note.pages,
@@ -48,6 +49,15 @@ export const NotesPage = () => {
     } catch (error) {
       console.error('Failed to load notes:', error);
     }
+  };
+
+  const API_BASE = 'https://online-book-sharing-system-backend.onrender.com/api';
+
+  const handleDirectDownload = (note) => {
+    const link = document.createElement('a');
+    link.href = `${API_BASE}/notes/download/${note.id}`;
+    link.download = `${note.title}.pdf`;
+    link.click();
   };
 
   const handleBuyNotes = (note) => {
@@ -207,7 +217,11 @@ export const NotesPage = () => {
                       </div>
 
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-bold text-primary-600">₹{note.price}</span>
+                        {note.isFree ? (
+                          <span className="text-lg font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-lg">FREE</span>
+                        ) : (
+                          <span className="text-lg font-bold text-primary-600">₹{note.price}</span>
+                        )}
                         <div className="flex items-center text-sm text-gray-500">
                           <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
                           {note.downloads}
@@ -232,14 +246,25 @@ export const NotesPage = () => {
                           <EyeIcon className="h-4 w-4" />
                           Preview
                         </Button>
-                        <Button 
-                          size="sm" 
-                          className="flex-1"
-                          onClick={() => handleBuyNotes(note)}
-                        >
-                          <ArrowDownTrayIcon className="h-4 w-4" />
-                          Buy
-                        </Button>
+                        {note.isFree ? (
+                          <Button
+                            size="sm"
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                            onClick={() => handleDirectDownload(note)}
+                          >
+                            <ArrowDownTrayIcon className="h-4 w-4" />
+                            Download
+                          </Button>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            className="flex-1"
+                            onClick={() => handleBuyNotes(note)}
+                          >
+                            <ArrowDownTrayIcon className="h-4 w-4" />
+                            Buy
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </Card>
@@ -333,25 +358,31 @@ export const NotesPage = () => {
               <div className="border-t p-4 bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-primary-600">₹{selectedNote.price}</p>
-                    <p className="text-sm text-gray-600">One-time purchase</p>
+                    {selectedNote.isFree ? (
+                      <p className="text-2xl font-bold text-green-600">FREE</p>
+                    ) : (
+                      <>
+                        <p className="text-2xl font-bold text-primary-600">₹{selectedNote.price}</p>
+                        <p className="text-sm text-gray-600">One-time purchase</p>
+                      </>
+                    )}
                   </div>
                   <div className="flex space-x-3">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowPreviewModal(false)}
-                    >
-                      Close Preview
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        setShowPreviewModal(false);
-                        handleBuyNotes(selectedNote);
-                      }}
-                    >
-                      <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-                      Buy Now
-                    </Button>
+                    <Button variant="outline" onClick={() => setShowPreviewModal(false)}>Close Preview</Button>
+                    {selectedNote.isFree ? (
+                      <Button
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => { setShowPreviewModal(false); handleDirectDownload(selectedNote); }}
+                      >
+                        <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+                        Download Free
+                      </Button>
+                    ) : (
+                      <Button onClick={() => { setShowPreviewModal(false); handleBuyNotes(selectedNote); }}>
+                        <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+                        Buy Now
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

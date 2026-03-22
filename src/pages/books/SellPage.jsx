@@ -79,7 +79,7 @@ export const SellPage = () => {
         condition: formData.condition.toLowerCase(),
         category: formData.category.toLowerCase(),
         description: formData.description,
-        status: 'pending' // Admin review required
+        status: 'active'
       };
       
       if (formData.imageFiles.length > 0) {
