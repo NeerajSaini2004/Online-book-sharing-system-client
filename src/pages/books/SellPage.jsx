@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { PhotoIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../components/ui/Button';
@@ -25,6 +25,21 @@ export const SellPage = () => {
   });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [categorySuggestions, setCategorySuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const handleCategoryInput = (value) => {
+    setFormData({ ...formData, category: value });
+    if (value.trim()) {
+      const filtered = categories
+        .filter(c => c !== 'All Categories' && c.toLowerCase().includes(value.toLowerCase()));
+      setCategorySuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+    } else {
+      setCategorySuggestions(categories.filter(c => c !== 'All Categories'));
+      setShowSuggestions(true);
+    }
+  };
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -167,17 +182,37 @@ export const SellPage = () => {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                    <select
+                    <input
+                      type="text"
                       value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      onChange={(e) => handleCategoryInput(e.target.value)}
+                      onFocus={() => {
+                        setCategorySuggestions(categories.filter(c => c !== 'All Categories'));
+                        setShowSuggestions(true);
+                      }}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                      placeholder="Type category..."
                       className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    >
-                      {categories.filter(c => c !== 'All Categories').map(cat =>
-                        <option key={cat} value={cat}>{cat}</option>
-                      )}
-                    </select>
+                      autoComplete="off"
+                    />
+                    {showSuggestions && (
+                      <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg">
+                        {categorySuggestions.map(cat => (
+                          <li
+                            key={cat}
+                            onMouseDown={() => {
+                              setFormData({ ...formData, category: cat });
+                              setShowSuggestions(false);
+                            }}
+                            className="px-3 py-2 hover:bg-primary-50 hover:text-primary-600 cursor-pointer text-sm"
+                          >
+                            {cat}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Condition *</label>
