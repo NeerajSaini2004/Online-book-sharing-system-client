@@ -31,20 +31,21 @@ export const NotesPage = () => {
   const loadNotes = async () => {
     try {
       const response = await apiService.getNotes();
+      if (!response.data) return;
       setNotesData(response.data.map(note => ({
         id: note._id,
         title: note.title,
         subject: note.subject,
         class: note.class,
         board: note.board,
-        author: note.author.name,
-        price: note.price,
+        author: note.author?.name || note.author || 'Unknown',
+        price: note.price || 0,
         isFree: note.isFree,
-        rating: note.rating,
-        downloads: note.downloads,
+        rating: note.rating || 0,
+        downloads: note.downloads || 0,
         pages: note.pages,
         type: 'PDF',
-        preview: `https://via.placeholder.com/300x400/3b82f6/white?text=${note.subject}+Notes`
+        preview: `https://placehold.co/300x400/3b82f6/white?text=${encodeURIComponent(note.subject)}`
       })));
     } catch (error) {
       console.error('Failed to load notes:', error);

@@ -10,10 +10,16 @@ if (!container) {
 }
 const root = ReactDOM.createRoot(container);
 
+const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
 root.render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+    {googleClientId ? (
+      <GoogleOAuthProvider clientId={googleClientId}>
+        <App />
+      </GoogleOAuthProvider>
+    ) : (
       <App />
-    </GoogleOAuthProvider>
+    )}
   </React.StrictMode>
 );
