@@ -253,6 +253,10 @@ export const classes = [
   '10th',
   '11th',
   '12th',
+  '1st Year',
+  '2nd Year',
+  '3rd Year',
+  '4th Year',
   'JEE',
   'NEET',
   'Graduation'
@@ -265,6 +269,8 @@ export const boards = [
   'State Board',
   'JEE Main',
   'NEET',
+  'BTech',
+  'MBBS',
   'Other'
 ];
 
