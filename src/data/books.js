@@ -235,7 +235,8 @@ export const categories = [
   'Geography',
   'Political Science',
   'Economics',
-  'Commerce'
+  'Commerce',
+  'Electronics'
 ];
 
 export const conditions = [
