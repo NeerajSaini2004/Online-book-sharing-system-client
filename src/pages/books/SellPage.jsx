@@ -91,8 +91,8 @@ export const SellPage = () => {
         isbn: formData.isbn,
         price: Number(formData.price),
         originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
-        condition: formData.condition.toLowerCase(),
-        category: formData.category.toLowerCase(),
+        condition: formData.condition,
+        category: formData.category,
         description: formData.description,
         status: 'active'
       };
