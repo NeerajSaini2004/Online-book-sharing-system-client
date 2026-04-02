@@ -58,25 +58,32 @@ export const NotesPage = () => {
   const handleDirectDownload = async (note) => {
     try {
       const response = await fetch(`${API_BASE}/notes/download/${note.id}`);
-      const data = await response.json();
       
-      if (data.downloadUrl) {
-        // Backend returned a URL - open directly
-        window.open(data.downloadUrl, '_blank');
-      } else if (response.ok) {
-        // Direct file download
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        if (data.downloadUrl) {
+          window.open(data.downloadUrl, '_blank');
+        } else {
+          alert(data.message || 'Download failed');
+        }
+      } else {
+        // Direct PDF file
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `${note.title}.pdf`;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-      } else {
-        alert('File not available. Please contact support.');
       }
     } catch (error) {
-      alert('Download failed: ' + error.message);
+      console.error('Download error:', error);
+      // Fallback - open directly in browser
+      window.open(`${API_BASE}/notes/download/${note.id}`, '_blank');
     }
   };
 
