@@ -76,12 +76,17 @@ export const BlogPage = () => {
   };
 
   const categories = [
-    { id: 'all', name: 'All Articles', count: 156 },
-    { id: 'textbooks', name: 'Textbooks', count: 45 },
-    { id: 'notes', name: 'Study Notes', count: 32 },
-    { id: 'exams', name: 'Exam Prep', count: 28 },
-    { id: 'general', name: 'General', count: 51 }
+    { id: 'all', name: 'All Articles' },
+    { id: 'textbooks', name: 'Textbooks' },
+    { id: 'notes', name: 'Study Notes' },
+    { id: 'exams', name: 'Exam Prep' },
+    { id: 'general', name: 'General' }
   ];
+
+  const getCategoryCount = (id) => {
+    if (id === 'all') return posts.length;
+    return posts.filter(p => p.category === id).length;
+  };
 
   const filteredPosts = posts.filter(post => 
     (activeTab === 'all' || post.category === activeTab) &&
@@ -119,7 +124,7 @@ export const BlogPage = () => {
                     }`}
                   >
                     <span className="font-medium">{category.name}</span>
-                    <Badge variant="secondary">{category.count}</Badge>
+                    <Badge variant="secondary">{getCategoryCount(category.id)}</Badge>
                   </button>
                 ))}
               </div>
