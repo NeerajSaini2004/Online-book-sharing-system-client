@@ -1,11 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { PhotoIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { categories, classes, boards } from '../../data/books';
 import { apiService } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+
+const categories = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'English', 'History', 'Geography', 'Economics', 'Commerce', 'Engineering', 'Medical', 'Other'];
+const conditions = ['Like New', 'Good', 'Fair', 'Poor'];
+const classList = ['9th', '10th', '11th', '12th', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduation', 'Other'];
+const boards = ['CBSE', 'ICSE', 'State Board', 'IGCSE', 'IB', 'Other'];
 
 export const SellPage = () => {
   const navigate = useNavigate();
@@ -16,7 +20,7 @@ export const SellPage = () => {
     price: '',
     originalPrice: '',
     condition: 'Good',
-    category: 'General',
+    category: 'Mathematics',
     class: '12th',
     board: 'CBSE',
     description: '',
@@ -24,7 +28,7 @@ export const SellPage = () => {
     imageFiles: []
   });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [showWarning, setShowWarning] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -41,9 +45,11 @@ export const SellPage = () => {
   };
 
   const removeImage = (index) => {
-    const newImages = formData.images.filter((_, i) => i !== index);
-    const newImageFiles = formData.imageFiles.filter((_, i) => i !== index);
-    setFormData({ ...formData, images: newImages, imageFiles: newImageFiles });
+    setFormData({ 
+      ...formData, 
+      images: formData.images.filter((_, i) => i !== index),
+      imageFiles: formData.imageFiles.filter((_, i) => i !== index)
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -53,22 +59,8 @@ export const SellPage = () => {
       alert('Please accept the Terms & Conditions');
       return;
     }
-    
-    if (!formData.title || !formData.author || !formData.price) {
-      alert('Please fill in all required fields');
-      return;
-    }
-    
-    // Content validation
-    const inappropriateKeywords = ['sex', 'adult', 'porn', 'nude', 'explicit'];
-    const contentToCheck = `${formData.title} ${formData.description}`.toLowerCase();
-    const hasInappropriate = inappropriateKeywords.some(word => contentToCheck.includes(word));
-    
-    if (hasInappropriate) {
-      alert('⚠️ Content Policy Violation\n\nYour listing contains inappropriate content and cannot be published.\n\nOnly academic books are allowed on this platform.');
-      return;
-    }
-    
+
+    setLoading(true);
     try {
       const submitData = {
         title: formData.title,
@@ -76,9 +68,11 @@ export const SellPage = () => {
         isbn: formData.isbn,
         price: Number(formData.price),
         originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
-        condition: formData.condition || 'Good',
-        category: formData.category || 'General',
-        description: formData.description,
+        condition: formData.condition,
+        category: formData.category,
+        class: formData.class,
+        board: formData.board,
+        description: formData.description || 'No description provided',
         status: 'active'
       };
       
@@ -87,20 +81,13 @@ export const SellPage = () => {
       }
       
       await apiService.createListing(submitData);
-      alert('✅ Book submitted for review!\n\nYour listing will be reviewed by our team within 24 hours.');
+      alert('✅ Book listed successfully!');
       navigate('/student/dashboard');
     } catch (error) {
       alert('Failed to list book: ' + error.message);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleSaveDraft = () => {
-    if (!formData.title) {
-      alert('Please enter at least a book title');
-      return;
-    }
-    alert(`Draft saved!\nTitle: ${formData.title}`);
-    console.log('Draft saved:', formData);
   };
 
   return (
@@ -122,61 +109,94 @@ export const SellPage = () => {
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Enter book title"
                     required
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Author *</label>
                   <input
                     type="text"
                     value={formData.author}
                     onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Enter author name"
                     required
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">ISBN</label>
                   <input
                     type="text"
                     value={formData.isbn}
                     onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Enter ISBN (optional)"
                   />
                 </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Selling Price *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Selling Price (₹) *</label>
                     <input
                       type="number"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="0"
+                      min="1"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Original Price</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Original Price (₹)</label>
                     <input
                       type="number"
                       value={formData.originalPrice}
                       onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      placeholder="0"
                     />
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                    <select
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      required
+                    >
+                      {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Condition *</label>
+                    <select
+                      value={formData.condition}
+                      onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      required
+                    >
+                      {conditions.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Class</label>
                     <select
                       value={formData.class}
                       onChange={(e) => setFormData({ ...formData, class: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
-                      {classes.filter(c => c !== 'All Classes').map(cls =>
-                        <option key={cls} value={cls}>{cls}</option>
-                      )}
+                      {classList.map(cls => <option key={cls} value={cls}>{cls}</option>)}
                     </select>
                   </div>
                   <div>
@@ -184,22 +204,21 @@ export const SellPage = () => {
                     <select
                       value={formData.board}
                       onChange={(e) => setFormData({ ...formData, board: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
-                      {boards.filter(b => b !== 'All Boards').map(board =>
-                        <option key={board} value={board}>{board}</option>
-                      )}
+                      {boards.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                   </div>
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={4}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    placeholder="Describe the book condition, any highlights, missing pages, etc."
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Describe the book condition, highlights, missing pages, etc."
                   />
                 </div>
               </div>
@@ -208,7 +227,7 @@ export const SellPage = () => {
             <Card>
               <h2 className="text-xl font-semibold mb-6">Book Photos</h2>
               <div className="space-y-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary-400 transition-colors">
                   <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 mb-4">Upload book photos ({formData.images.length}/5)</p>
                   <input
@@ -219,37 +238,31 @@ export const SellPage = () => {
                     className="hidden"
                     id="photo-upload"
                   />
-                  <label htmlFor="photo-upload">
-                    <Button type="button" variant="outline" onClick={() => document.getElementById('photo-upload').click()}>
-                      <PlusIcon className="h-4 w-4" />
-                      Add Photos
-                    </Button>
-                  </label>
+                  <Button type="button" variant="outline" onClick={() => document.getElementById('photo-upload').click()}>
+                    <PlusIcon className="h-4 w-4" />
+                    Add Photos
+                  </Button>
                 </div>
+
                 {formData.images.length > 0 && (
                   <div className="grid grid-cols-3 gap-2">
                     {formData.images.map((img, idx) => (
                       <div key={idx} className="relative">
-                        <img src={img} alt={`Book ${idx + 1}`} className="w-full h-24 object-cover rounded" />
+                        <img src={img} alt={`Book ${idx + 1}`} className="w-full h-24 object-cover rounded-lg" />
                         <button
                           type="button"
                           onClick={() => removeImage(idx)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                        >
-                          ×
-                        </button>
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                        >×</button>
                       </div>
                     ))}
                   </div>
                 )}
-                <p className="text-sm text-gray-500">
-                  Add up to 5 photos. Include front cover, back cover, and any damage or highlights.
-                </p>
               </div>
 
               <div className="mt-8">
-                <h3 className="text-lg font-medium mb-4">Preview</h3>
-                <Card className="p-4">
+                <h3 className="text-lg font-medium mb-4">Live Preview</h3>
+                <Card className="p-4 bg-gray-50">
                   <div className="aspect-[3/4] bg-gray-200 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                     {formData.images.length > 0 ? (
                       <img src={formData.images[0]} alt="Preview" className="w-full h-full object-cover" />
@@ -259,15 +272,16 @@ export const SellPage = () => {
                   </div>
                   <h4 className="font-semibold">{formData.title || 'Book Title'}</h4>
                   <p className="text-sm text-gray-600">{formData.author || 'Author Name'}</p>
-                  <p className="text-lg font-bold text-primary-600 mt-2">
-                    ₹{formData.price || '0'}
-                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-lg font-bold text-primary-600">₹{formData.price || '0'}</p>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">{formData.condition}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{formData.category} • {formData.class} • {formData.board}</p>
                 </Card>
               </div>
             </Card>
           </div>
 
-          {/* Content Policy Warning */}
           <Card className="mt-8 bg-yellow-50 border-2 border-yellow-400">
             <div className="flex items-start space-x-3">
               <div className="text-2xl">⚠️</div>
@@ -277,14 +291,12 @@ export const SellPage = () => {
                   <li>✓ Only academic and educational books allowed</li>
                   <li>✗ No adult, sexual, or inappropriate content</li>
                   <li>✗ No pirated or illegal copies</li>
-                  <li>• All listings are reviewed before publishing</li>
                   <li>• Violations may result in account suspension</li>
                 </ul>
               </div>
             </div>
           </Card>
 
-          {/* Terms & Conditions */}
           <Card className="mt-4">
             <label className="flex items-start space-x-3 cursor-pointer">
               <input
@@ -295,15 +307,14 @@ export const SellPage = () => {
                 required
               />
               <span className="text-sm text-gray-700">
-                I confirm that this book is academic/educational content and complies with the platform's content policy. 
-                I understand that inappropriate content will be rejected and may result in account suspension.
+                I confirm that this book is academic/educational content and complies with the platform's content policy.
               </span>
             </label>
           </Card>
 
           <div className="mt-8 flex justify-end gap-4">
-            <Button type="button" onClick={handleSaveDraft} variant="outline">Save as Draft</Button>
-            <Button type="submit">List Book</Button>
+            <Button type="button" onClick={() => navigate(-1)} variant="outline">Cancel</Button>
+            <Button type="submit" loading={loading}>List Book</Button>
           </div>
         </form>
       </div>

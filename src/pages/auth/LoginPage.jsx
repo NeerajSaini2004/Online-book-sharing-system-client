@@ -158,14 +158,6 @@ export const LoginPage = () => {
             </Button>
           </form>
 
-<div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <h4 className="text-sm font-medium text-blue-900 mb-2">Test Accounts:</h4>
-            <div className="text-xs text-blue-800 space-y-1">
-              <div><strong>Student:</strong> student@test.com / student123</div>
-              <div><strong>Library:</strong> library@test.com / library123</div>
-            </div>
-          </div>
-
 <p className="text-center text-sm text-gray-600">
             Don't have an account?{' '}
             <Link to="/signup" className="text-primary-600 hover:text-primary-700 font-medium">
