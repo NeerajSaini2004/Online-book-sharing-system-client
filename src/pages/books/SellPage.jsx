@@ -15,6 +15,8 @@ export const SellPage = () => {
     isbn: '',
     price: '',
     originalPrice: '',
+    condition: 'Good',
+    category: 'General',
     class: '12th',
     board: 'CBSE',
     description: '',
@@ -74,6 +76,8 @@ export const SellPage = () => {
         isbn: formData.isbn,
         price: Number(formData.price),
         originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
+        condition: formData.condition || 'Good',
+        category: formData.category || 'General',
         description: formData.description,
         status: 'active'
       };
