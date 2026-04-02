@@ -53,12 +53,31 @@ export const NotesPage = () => {
   };
 
   const API_BASE = 'https://online-book-sharing-system-backend.onrender.com/api';
+  const BACKEND_URL = 'https://online-book-sharing-system-backend.onrender.com';
 
-  const handleDirectDownload = (note) => {
-    const link = document.createElement('a');
-    link.href = `${API_BASE}/notes/download/${note.id}`;
-    link.download = `${note.title}.pdf`;
-    link.click();
+  const handleDirectDownload = async (note) => {
+    try {
+      const response = await fetch(`${API_BASE}/notes/download/${note.id}`);
+      const data = await response.json();
+      
+      if (data.downloadUrl) {
+        // Backend returned a URL - open directly
+        window.open(data.downloadUrl, '_blank');
+      } else if (response.ok) {
+        // Direct file download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${note.title}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert('File not available. Please contact support.');
+      }
+    } catch (error) {
+      alert('Download failed: ' + error.message);
+    }
   };
 
   const handleBuyNotes = (note) => {
