@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { PhotoIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { categories, conditions, classes, boards } from '../../data/books';
+import { categories, classes, boards } from '../../data/books';
 import { apiService } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,8 +15,6 @@ export const SellPage = () => {
     isbn: '',
     price: '',
     originalPrice: '',
-    condition: 'Good',
-    category: 'Mathematics',
     class: '12th',
     board: 'CBSE',
     description: '',
@@ -25,21 +23,6 @@ export const SellPage = () => {
   });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
-  const [categorySuggestions, setCategorySuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-
-  const handleCategoryInput = (value) => {
-    setFormData({ ...formData, category: value });
-    if (value.trim()) {
-      const filtered = categories
-        .filter(c => c !== 'All Categories' && c.toLowerCase().includes(value.toLowerCase()));
-      setCategorySuggestions(filtered);
-      setShowSuggestions(filtered.length > 0);
-    } else {
-      setCategorySuggestions(categories.filter(c => c !== 'All Categories'));
-      setShowSuggestions(true);
-    }
-  };
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -91,8 +74,6 @@ export const SellPage = () => {
         isbn: formData.isbn,
         price: Number(formData.price),
         originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
-        condition: formData.condition,
-        category: formData.category,
         description: formData.description,
         status: 'active'
       };
@@ -179,52 +160,6 @@ export const SellPage = () => {
                       onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2"
                     />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                    <input
-                      type="text"
-                      value={formData.category}
-                      onChange={(e) => handleCategoryInput(e.target.value)}
-                      onFocus={() => {
-                        setCategorySuggestions(categories.filter(c => c !== 'All Categories'));
-                        setShowSuggestions(true);
-                      }}
-                      onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                      placeholder="Type category..."
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                      autoComplete="off"
-                    />
-                    {showSuggestions && (
-                      <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-48 overflow-y-auto shadow-lg">
-                        {categorySuggestions.map(cat => (
-                          <li
-                            key={cat}
-                            onMouseDown={() => {
-                              setFormData({ ...formData, category: cat });
-                              setShowSuggestions(false);
-                            }}
-                            className="px-3 py-2 hover:bg-primary-50 hover:text-primary-600 cursor-pointer text-sm"
-                          >
-                            {cat}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Condition *</label>
-                    <select
-                      value={formData.condition}
-                      onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    >
-                      {conditions.filter(c => c !== 'All Conditions').map(cond =>
-                        <option key={cond} value={cond}>{cond}</option>
-                      )}
-                    </select>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">

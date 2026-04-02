@@ -67,9 +67,9 @@ export const StudentDashboard = () => {
   };
 
   const stats = [
-    { label: 'Books Sold', value: '12', icon: BookOpenIcon, color: 'text-green-600' },
-    { label: 'Total Earnings', value: '₹8,450', icon: CurrencyRupeeIcon, color: 'text-blue-600' },
-    { label: 'Active Listings', value: myListings.length.toString(), icon: EyeIcon, color: 'text-purple-600' },
+    { label: 'Books Sold', value: myListings.filter(l => l.status === 'sold').length.toString(), icon: BookOpenIcon, color: 'text-green-600' },
+    { label: 'Total Earnings', value: '₹' + myListings.filter(l => l.status === 'sold').reduce((sum, l) => sum + (l.price || 0), 0).toLocaleString(), icon: CurrencyRupeeIcon, color: 'text-blue-600' },
+    { label: 'Active Listings', value: myListings.filter(l => l.status === 'active').length.toString(), icon: EyeIcon, color: 'text-purple-600' },
     { label: 'Wishlist Items', value: wishlist.length.toString(), icon: HeartIcon, color: 'text-red-600' }
   ];
 
