@@ -15,10 +15,11 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
-import { ChatInterface } from '../../components/chat/ChatInterface';
+import { useAuth } from '../../context/AuthContext';
 
 export const StudentDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [myListings, setMyListings] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -43,16 +44,50 @@ export const StudentDashboard = () => {
     loadOrders();
   }, []);
 
-  const loadWishlist = () => {
-    const wishlistKey = 'bookWishlist';
-    const savedWishlist = JSON.parse(localStorage.getItem(wishlistKey) || '[]');
-    setWishlist(savedWishlist);
+  const loadWishlist = async () => {
+    try {
+      const response = await apiService.getWishlist();
+      if (response.success) {
+        const mapped = response.data.map(w => ({
+          id: w.listing?._id || w._id,
+          title: w.listing?.title || 'Unknown',
+          author: w.listing?.author || '',
+          currentPrice: w.listing?.price || 0,
+          targetPrice: w.listing?.price || 0,
+          image: w.listing?.images?.[0]?.url
+            ? `https://online-book-sharing-system-backend.onrender.com${w.listing.images[0].url}`
+            : null
+        }));
+        setWishlist(mapped);
+      }
+    } catch {
+      const saved = JSON.parse(localStorage.getItem('bookWishlist') || '[]');
+      setWishlist(saved);
+    }
   };
 
-  const loadOrders = () => {
-    const ordersKey = 'myOrders';
-    const savedOrders = JSON.parse(localStorage.getItem(ordersKey) || '[]');
-    setMyOrders(savedOrders);
+  const loadOrders = async () => {
+    try {
+      const response = await apiService.getMyOrders();
+      if (response.success) {
+        const mapped = response.data.map(o => ({
+          id: o._id,
+          title: o.listing?.title || 'Unknown Book',
+          seller: o.seller?.name || 'Unknown Seller',
+          amount: o.totalAmount || o.price || 0,
+          status: o.status || 'pending',
+          orderDate: new Date(o.createdAt).toLocaleDateString(),
+          image: o.listing?.images?.[0]?.url
+            ? `https://online-book-sharing-system-backend.onrender.com${o.listing.images[0].url}`
+            : null
+        }));
+        setMyOrders(mapped);
+      }
+    } catch (error) {
+      // fallback to localStorage
+      const saved = JSON.parse(localStorage.getItem('myOrders') || '[]');
+      setMyOrders(saved);
+    }
   };
 
   const loadMyListings = async () => {
@@ -73,58 +108,14 @@ export const StudentDashboard = () => {
     { label: 'Wishlist Items', value: wishlist.length.toString(), icon: HeartIcon, color: 'text-red-600' }
   ];
 
-  const recentListings = [
-    {
-      id: 1,
-      title: 'Physics for JEE',
-      author: 'H.C. Verma',
-      price: 380,
-      status: 'active',
-      views: 45,
-      listedDate: '2 days ago',
-      image: 'https://picsum.photos/300/400?random=3'
-    },
-    {
-      id: 2,
-      title: 'Organic Chemistry',
-      author: 'Morrison & Boyd',
-      price: 450,
-      status: 'sold',
-      views: 89,
-      listedDate: '1 week ago',
-      image: 'https://picsum.photos/300/400?random=1'
-    }
-  ];
+  const recentOrders = myOrders;
 
-  const recentOrders = myOrders.length > 0 ? myOrders : [
-    {
-      id: 1,
-      title: 'Mathematics Class 12',
-      seller: 'Priya Sharma',
-      amount: 320,
-      status: 'delivered',
-      orderDate: '3 days ago',
-      image: 'https://picsum.photos/300/400?random=5'
-    },
-    {
-      id: 2,
-      title: 'Computer Science Python',
-      seller: 'Tech Library',
-      amount: 290,
-      status: 'shipped',
-      orderDate: '5 days ago',
-      image: 'https://picsum.photos/300/400?random=11'
-    }
-  ];
-
-  const wishlistItems = wishlist;
-
-  const removeFromWishlist = (itemId) => {
-    if (confirm('Remove this book from wishlist?')) {
-      const wishlistKey = 'bookWishlist';
-      const updatedWishlist = wishlist.filter(item => item.id !== itemId);
-      setWishlist(updatedWishlist);
-      localStorage.setItem(wishlistKey, JSON.stringify(updatedWishlist));
+  const removeFromWishlist = async (itemId) => {
+    if (window.confirm('Remove this book from wishlist?')) {
+      try {
+        await apiService.removeFromWishlist(itemId);
+      } catch {}
+      setWishlist(wishlist.filter(item => item.id !== itemId));
     }
   };
 
@@ -169,6 +160,8 @@ export const StudentDashboard = () => {
     }
   ];
 
+  const wishlistItems = wishlist;
+
   const exportOrders = () => {
     const csv = ['Title,Seller,Amount,Status,Date\n'];
     recentOrders.forEach(order => {
@@ -187,7 +180,7 @@ export const StudentDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-secondary-50 to-primary-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-secondary-900 mb-2">Dashboard</h1>
+          <h1 className="text-3xl font-display font-bold text-secondary-900 mb-2">Welcome, {user?.name || 'Student'} 👋</h1>
           <p className="text-secondary-600">Manage your books and track your activity</p>
         </div>
 
@@ -658,29 +651,30 @@ export const StudentDashboard = () => {
         {/* Chat Modal */}
         {showChatModal && selectedItem && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg w-full max-w-2xl h-[600px] flex flex-col">
+            <div className="bg-white rounded-lg w-full max-w-md flex flex-col" style={{height: '480px'}}>
               <div className="flex items-center justify-between p-4 border-b">
-                <h3 className="text-xl font-bold">Chat with {selectedItem.seller}</h3>
+                <h3 className="text-lg font-bold">Chat with {selectedItem.seller}</h3>
                 <button onClick={() => setShowChatModal(false)} className="p-2 hover:bg-gray-100 rounded-full">
-                  <XMarkIcon className="w-6 h-6" />
+                  <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              <div className="flex-1 overflow-hidden">
-                <ChatInterface
-                  messages={chatMessages}
-                  onSendMessage={(content, type) => {
-                    const newMsg = {
-                      id: Date.now(),
-                      senderId: 'currentUser',
-                      content,
-                      type,
-                      timestamp: new Date().toISOString()
-                    };
-                    setChatMessages([...chatMessages, newMsg]);
-                  }}
-                  currentUserId="currentUser"
-                  recipientName={selectedItem.seller}
-                />
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {chatMessages.length === 0 && (
+                  <p className="text-center text-gray-400 text-sm mt-8">Start a conversation</p>
+                )}
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-xs px-3 py-2 rounded-lg text-sm ${msg.sender === 'me' ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-800'}`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t p-3">
+                <form onSubmit={(e) => { e.preventDefault(); const input = e.target.elements.msg; if(input.value.trim()) { setChatMessages([...chatMessages, { sender: 'me', text: input.value }]); input.value = ''; }}} className="flex gap-2">
+                  <input name="msg" type="text" placeholder="Type a message..." className="flex-1 p-2 border rounded-lg text-sm" />
+                  <Button type="submit" size="sm">Send</Button>
+                </form>
               </div>
             </div>
           </div>
