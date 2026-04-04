@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   BookOpenIcon,
   CurrencyRupeeIcon,
   EyeIcon,
   ShoppingBagIcon,
-  ChartBarIcon,
   PlusIcon
 } from '@heroicons/react/24/outline';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { apiService } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
+
+const API_BASE = 'https://online-book-sharing-system-backend.onrender.com/api';
 
 export const LibraryDashboard = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [showAddBookModal, setShowAddBookModal] = useState(false);
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
@@ -30,6 +34,89 @@ export const LibraryDashboard = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [chatMessage, setChatMessage] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
+
+  // Dynamic data
+  const [inventory, setInventory] = useState([]);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [stats, setStats] = useState([
+    { label: 'Total Books', value: '0', icon: BookOpenIcon, color: 'text-blue-600' },
+    { label: 'Monthly Revenue', value: '₹0', icon: CurrencyRupeeIcon, color: 'text-green-600' },
+    { label: 'Active Listings', value: '0', icon: EyeIcon, color: 'text-purple-600' },
+    { label: 'Orders This Month', value: '0', icon: ShoppingBagIcon, color: 'text-orange-600' }
+  ]);
+  const [analytics, setAnalytics] = useState({ monthSales: 0, totalSold: 0, avgOrder: 0, categories: [] });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    setLoading(true);
+    try {
+      const [listingsRes, ordersRes] = await Promise.allSettled([
+        apiService.getMyListings(),
+        apiService.getMySales()
+      ]);
+
+      // Process listings/inventory
+      const listings = listingsRes.status === 'fulfilled' ? listingsRes.value.data || [] : [];
+      const mappedInventory = listings.map(l => ({
+        id: l._id,
+        title: l.title,
+        author: l.author,
+        stock: l.stock || 1,
+        price: l.price,
+        category: l.category,
+        status: (l.stock || 1) <= 3 ? 'low-stock' : 'in-stock'
+      }));
+      setInventory(mappedInventory);
+
+      // Process orders
+      const orders = ordersRes.status === 'fulfilled' ? ordersRes.value.data || [] : [];
+      const mappedOrders = orders.map(o => ({
+        id: o._id,
+        book: o.listing?.title || 'Unknown Book',
+        buyer: o.buyer?.name || 'Unknown Buyer',
+        amount: o.totalAmount || o.price || 0,
+        status: o.status || 'pending',
+        date: new Date(o.createdAt).toLocaleDateString()
+      }));
+      setRecentOrders(mappedOrders);
+
+      // Calculate stats
+      const now = new Date();
+      const thisMonthOrders = mappedOrders.filter(o => {
+        const d = new Date(o.date);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      });
+      const monthRevenue = thisMonthOrders.reduce((sum, o) => sum + o.amount, 0);
+      const totalRevenue = mappedOrders.reduce((sum, o) => sum + o.amount, 0);
+      const avgOrder = mappedOrders.length ? Math.round(totalRevenue / mappedOrders.length) : 0;
+
+      setStats([
+        { label: 'Total Books', value: listings.length.toString(), icon: BookOpenIcon, color: 'text-blue-600' },
+        { label: 'Monthly Revenue', value: `₹${monthRevenue.toLocaleString()}`, icon: CurrencyRupeeIcon, color: 'text-green-600' },
+        { label: 'Active Listings', value: listings.filter(l => l.status === 'active').length.toString(), icon: EyeIcon, color: 'text-purple-600' },
+        { label: 'Orders This Month', value: thisMonthOrders.length.toString(), icon: ShoppingBagIcon, color: 'text-orange-600' }
+      ]);
+
+      // Category analytics
+      const catCount = {};
+      listings.forEach(l => { catCount[l.category] = (catCount[l.category] || 0) + 1; });
+      const total = listings.length || 1;
+      const topCats = Object.entries(catCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([name, count]) => ({ name, percent: Math.round((count / total) * 100) }));
+
+      setAnalytics({ monthSales: monthRevenue, totalSold: mappedOrders.length, avgOrder, categories: topCats });
+    } catch (err) {
+      console.error('Dashboard load error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const generateInvoice = (order) => {
     const invoiceData = `
@@ -80,18 +167,16 @@ SALES ANALYTICS REPORT
 ======================
 Generated: ${new Date().toLocaleString()}
 
-This Month Sales: ₹45,200
-Total Books Sold: 156
-Average Order Value: ₹290
+This Month Sales: ₹${analytics.monthSales.toLocaleString()}
+Total Orders: ${analytics.totalSold}
+Average Order Value: ₹${analytics.avgOrder}
 
 Top Categories:
-- Computer Science: 80%
-- Mathematics: 60%
-- Physics: 40%
+${analytics.categories.map(c => `- ${c.name}: ${c.percent}%`).join('\n')}
 
-Total Books in Inventory: 2,450
-Active Listings: 156
-Orders This Month: 89
+Total Books in Inventory: ${inventory.length}
+Active Listings: ${stats[2]?.value || 0}
+Orders This Month: ${stats[3]?.value || 0}
     `;
     const blob = new Blob([reportData], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -101,51 +186,6 @@ Orders This Month: 89
     a.click();
     URL.revokeObjectURL(url);
   };
-
-  const stats = [
-    { label: 'Total Books', value: '2,450', icon: BookOpenIcon, color: 'text-blue-600' },
-    { label: 'Monthly Revenue', value: '₹45,200', icon: CurrencyRupeeIcon, color: 'text-green-600' },
-    { label: 'Active Listings', value: '156', icon: EyeIcon, color: 'text-purple-600' },
-    { label: 'Orders This Month', value: '89', icon: ShoppingBagIcon, color: 'text-orange-600' }
-  ];
-
-  const recentOrders = [
-    {
-      id: 1,
-      book: 'Introduction to Algorithms',
-      buyer: 'Rahul Kumar',
-      amount: 450,
-      status: 'completed',
-      date: '2 hours ago'
-    },
-    {
-      id: 2,
-      book: 'Database System Concepts',
-      buyer: 'Priya Sharma',
-      amount: 400,
-      status: 'shipped',
-      date: '1 day ago'
-    }
-  ];
-
-  const inventory = [
-    {
-      id: 1,
-      title: 'Physics for Engineers',
-      author: 'Halliday & Resnick',
-      stock: 15,
-      price: 350,
-      status: 'in-stock'
-    },
-    {
-      id: 2,
-      title: 'Mathematics for ML',
-      author: 'Marc Peter Deisenroth',
-      stock: 3,
-      price: 500,
-      status: 'low-stock'
-    }
-  ];
 
   const bookRequests = [
     {
@@ -185,8 +225,12 @@ Orders This Month: 89
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-display font-bold text-secondary-900 mb-2">Library Dashboard</h1>
-          <p className="text-secondary-600">Manage your library inventory and track sales</p>
+          <p className="text-secondary-600">Welcome, {user?.name || 'Library'} — manage your inventory and track sales</p>
         </div>
+
+        {loading && (
+          <div className="text-center py-8 text-gray-500">Loading dashboard data...</div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -418,15 +462,15 @@ Orders This Month: 89
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 bg-secondary-50 rounded-lg">
                     <span className="text-secondary-600">This Month Sales</span>
-                    <span className="font-semibold text-secondary-900">₹45,200</span>
+                    <span className="font-semibold text-secondary-900">₹{analytics.monthSales.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-secondary-50 rounded-lg">
-                    <span className="text-secondary-600">Total Books Sold</span>
-                    <span className="font-semibold text-secondary-900">156</span>
+                    <span className="text-secondary-600">Total Orders</span>
+                    <span className="font-semibold text-secondary-900">{analytics.totalSold}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-secondary-50 rounded-lg">
                     <span className="text-secondary-600">Average Order Value</span>
-                    <span className="font-semibold text-secondary-900">₹290</span>
+                    <span className="font-semibold text-secondary-900">₹{analytics.avgOrder}</span>
                   </div>
                   <Button onClick={generateReport} className="w-full">Generate Report</Button>
                 </div>
@@ -435,33 +479,21 @@ Orders This Month: 89
               <Card>
                 <h3 className="text-lg font-display font-bold text-secondary-900 mb-4">Popular Categories</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-secondary-600">Computer Science</span>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-20 h-2 bg-secondary-200 rounded-full">
-                        <div className="w-16 h-2 bg-primary-500 rounded-full"></div>
+                  {analytics.categories.length === 0 ? (
+                    <p className="text-center text-gray-500 py-4">No data yet</p>
+                  ) : (
+                    analytics.categories.map(cat => (
+                      <div key={cat.name} className="flex justify-between items-center">
+                        <span className="text-secondary-600 capitalize">{cat.name}</span>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-20 h-2 bg-secondary-200 rounded-full">
+                            <div className="h-2 bg-primary-500 rounded-full" style={{ width: `${cat.percent}%` }}></div>
+                          </div>
+                          <span className="text-sm text-secondary-600">{cat.percent}%</span>
+                        </div>
                       </div>
-                      <span className="text-sm text-secondary-600">80%</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-secondary-600">Mathematics</span>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-20 h-2 bg-secondary-200 rounded-full">
-                        <div className="w-12 h-2 bg-primary-500 rounded-full"></div>
-                      </div>
-                      <span className="text-sm text-secondary-600">60%</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-secondary-600">Physics</span>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-20 h-2 bg-secondary-200 rounded-full">
-                        <div className="w-8 h-2 bg-primary-500 rounded-full"></div>
-                      </div>
-                      <span className="text-sm text-secondary-600">40%</span>
-                    </div>
-                  </div>
+                    ))
+                  )}
                 </div>
               </Card>
             </div>
