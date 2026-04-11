@@ -58,32 +58,26 @@ export const NotesPage = () => {
   const handleDirectDownload = async (note) => {
     try {
       const response = await fetch(`${API_BASE}/notes/download/${note.id}`);
+      const data = await response.json();
       
-      const contentType = response.headers.get('content-type');
-      
-      if (contentType && contentType.includes('application/json')) {
-        const data = await response.json();
-        if (data.downloadUrl) {
-          window.open(data.downloadUrl, '_blank');
-        } else {
-          alert(data.message || 'Download failed');
-        }
+      if (data.downloadUrl) {
+        // Fetch the file as blob and download with proper name
+        const fileRes = await fetch(data.downloadUrl);
+        const blob = await fileRes.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `${note.title}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(blobUrl);
       } else {
-        // Direct PDF file
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${note.title}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+        alert(data.message || 'Download failed');
       }
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback - open directly in browser
-      window.open(`${API_BASE}/notes/download/${note.id}`, '_blank');
+      alert('Download failed. Please try again.');
     }
   };
 
