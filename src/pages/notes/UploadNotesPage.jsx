@@ -14,7 +14,6 @@ export const UploadNotesPage = () => {
     title: '',
     subject: '',
     class: '',
-    board: '',
     description: '',
     price: '',
     pages: '',
@@ -24,13 +23,19 @@ export const UploadNotesPage = () => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science'];
+  const subjects = {
+    default: ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science', 'History', 'Geography', 'Economics'],
+    Engineering: ['Computer Science Engineering', 'Mechanical Engineering', 'Civil Engineering', 'Electrical Engineering', 'Electronics & Communication', 'Chemical Engineering', 'Aerospace Engineering', 'Biotechnology', 'Information Technology', 'Data Science']
+  };
   const classes = ['9th', '10th', '11th', '12th', 'JEE', 'NEET', 'Engineering'];
-  const boards = ['CBSE', 'ICSE', 'State Board', 'JEE Main', 'JEE Advanced', 'NEET'];
+
+  const getSubjects = () => formData.class === 'Engineering' ? subjects.Engineering : subjects.default;
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+    const updated = { ...formData, [name]: type === 'checkbox' ? checked : value };
+    if (name === 'class') updated.subject = '';
+    setFormData(updated);
   };
 
   const handleFileChange = (e) => {
@@ -93,7 +98,7 @@ export const UploadNotesPage = () => {
       }
 
       setToast({ type: 'success', message: 'Notes uploaded successfully!' });
-      setFormData({ title: '', subject: '', class: '', board: '', description: '', price: '', pages: '', isFree: false });
+      setFormData({ title: '', subject: '', class: '', description: '', price: '', pages: '', isFree: false });
       setFile(null);
     } catch (error) {
       setToast({ type: 'error', message: 'Network error. Please try again.' });
@@ -138,7 +143,7 @@ export const UploadNotesPage = () => {
                   required
                 >
                   <option value="">Select Subject</option>
-                  {subjects.map(subject => (
+                  {getSubjects().map(subject => (
                     <option key={subject} value={subject}>{subject}</option>
                   ))}
                 </select>
@@ -158,24 +163,6 @@ export const UploadNotesPage = () => {
                   <option value="">Select Class</option>
                   {classes.map(cls => (
                     <option key={cls} value={cls}>{cls}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Board *
-                </label>
-                <select
-                  name="board"
-                  value={formData.board}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select Board</option>
-                  {boards.map(board => (
-                    <option key={board} value={board}>{board}</option>
                   ))}
                 </select>
               </div>
@@ -250,27 +237,25 @@ export const UploadNotesPage = () => {
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-6">
                 {!file ? (
-                  <div className="text-center">
-                    <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="mt-4">
-                      <label htmlFor="file-upload" className="cursor-pointer">
-                        <span className="mt-2 block text-sm font-medium text-gray-900">
-                          Click to upload PDF file
-                        </span>
-                        <span className="mt-1 block text-sm text-gray-500">
-                          Maximum file size: 10MB
-                        </span>
-                      </label>
-                      <input
-                        id="file-upload"
-                        name="file-upload"
-                        type="file"
-                        className="sr-only"
-                        accept=".pdf"
-                        onChange={handleFileChange}
-                      />
+                  <label htmlFor="file-upload" className="cursor-pointer block">
+                    <div className="text-center">
+                      <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
+                      <span className="mt-2 block text-sm font-medium text-gray-900">
+                        Click anywhere here to upload PDF
+                      </span>
+                      <span className="mt-1 block text-sm text-gray-500">
+                        Maximum file size: 10MB
+                      </span>
                     </div>
-                  </div>
+                    <input
+                      id="file-upload"
+                      name="file-upload"
+                      type="file"
+                      className="sr-only"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                    />
+                  </label>
                 ) : (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
