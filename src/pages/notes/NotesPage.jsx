@@ -58,25 +58,21 @@ export const NotesPage = () => {
   const handleDirectDownload = async (note) => {
     try {
       const response = await fetch(`${API_BASE}/notes/download/${note.id}`);
-      const data = await response.json();
-      
-      if (data.downloadUrl) {
-        // Fetch the file as blob and download with proper name
-        const fileRes = await fetch(data.downloadUrl);
-        const blob = await fileRes.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = `${note.title}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(blobUrl);
-      } else {
-        alert(data.message || 'Download failed');
+      if (!response.ok) {
+        const err = await response.json();
+        alert(err.message || 'Download failed');
+        return;
       }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${note.title}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download error:', error);
       alert('Download failed. Please try again.');
     }
   };
