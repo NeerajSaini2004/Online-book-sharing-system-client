@@ -159,44 +159,36 @@ export const NotesPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Digital Notes Marketplace</h1>
-          <p className="text-gray-600">Download high-quality study notes from top students</p>
+        <div className="mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Digital Notes</h1>
+          <p className="text-gray-600 text-sm">Download high-quality study notes</p>
         </div>
 
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="relative flex-1 max-w-2xl">
-              <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search notes by title or subject..."
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
+        <div className="mb-4">
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search notes..." className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary-500" />
             </div>
-            <Button onClick={() => navigate('/notes/upload')}>Upload Notes</Button>
+            <Button size="sm" onClick={() => navigate('/notes/upload')}>Upload</Button>
           </div>
         </div>
 
-        <div className="flex gap-8">
-          <div className="w-64 flex-shrink-0">
-            <Card>
-              <h3 className="font-semibold text-gray-900 mb-4">Categories</h3>
-              <div className="space-y-2">
+        {/* Mobile category scroll */}
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-4 sm:hidden">
+          {categories.map(category => (
+            <button key={category} onClick={() => setSelectedCategory(category)} className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${ selectedCategory === category ? 'bg-primary-600 text-white' : 'bg-white border border-gray-300 text-gray-600'}`}>{category}</button>
+          ))}
+        </div>
+
+        <div className="flex gap-6">
+          {/* Desktop sidebar */}
+          <div className="hidden sm:block w-48 flex-shrink-0">
+            <Card className="p-4">
+              <h3 className="font-semibold text-gray-900 mb-3 text-sm">Categories</h3>
+              <div className="space-y-1">
                 {categories.map(category => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                      selectedCategory === category 
-                        ? 'bg-primary-50 text-primary-600 font-medium' 
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {category}
-                  </button>
+                  <button key={category} onClick={() => setSelectedCategory(category)} className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${ selectedCategory === category ? 'bg-primary-50 text-primary-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>{category}</button>
                 ))}
               </div>
             </Card>
@@ -207,7 +199,7 @@ export const NotesPage = () => {
               <p className="text-gray-600">Showing {filteredNotes.length} notes</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {filteredNotes.map((note) => (
                 <motion.div
                   key={note.id}

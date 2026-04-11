@@ -245,26 +245,16 @@ export const BookDetailPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary-50 to-primary-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {/* Image Gallery */}
-          <div className="space-y-4">
-            <div className="aspect-[4/5] bg-white rounded-2xl overflow-hidden">
-              <img
-                src={bookImages[selectedImage]}
-                alt={book.title}
-                className="w-full h-full object-cover"
-                onError={(e) => { e.target.src = FALLBACK_IMG; }}
-              />
+          <div className="space-y-3">
+            <div className="aspect-[4/5] bg-white rounded-2xl overflow-hidden max-h-80 sm:max-h-none">
+              <img src={bookImages[selectedImage]} alt={book.title} className="w-full h-full object-cover" onError={(e) => { e.target.src = FALLBACK_IMG; }} />
             </div>
-            <div className="flex space-x-2">
+            <div className="flex space-x-2 overflow-x-auto pb-1">
               {bookImages.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`w-20 h-24 rounded-lg overflow-hidden border-2 ${selectedImage === index ? 'border-primary-500' : 'border-gray-200'
-                    }`}
-                >
-                  <img src={image} alt="" className="w-full h-full object-cover" />
+                <button key={index} onClick={() => setSelectedImage(index)} className={`w-16 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 ${selectedImage === index ? 'border-primary-500' : 'border-gray-200'}`}>
+                  <img src={image} alt="" className="w-full h-full object-cover" onError={(e) => { e.target.src = FALLBACK_IMG; }} />
                 </button>
               ))}
             </div>

@@ -45,69 +45,43 @@ export const LandingPage = () => {
 
   return (
     <div className="min-h-screen">
-      <section className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white py-20 relative overflow-hidden">
+      <section className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white py-12 sm:py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-20 left-10 w-32 h-32 bg-accent-400/20 rounded-full blur-xl animate-pulse-soft"></div>
-          <div className="absolute bottom-20 right-10 w-48 h-48 bg-accent-300/10 rounded-full blur-2xl animate-bounce-soft"></div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h1 className="text-5xl lg:text-6xl font-display font-bold mb-6 leading-tight relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-display font-bold mb-4 sm:mb-6 leading-tight">
                 <span className="bg-gradient-to-r from-white to-accent-200 bg-clip-text text-transparent">OnlineBook</span>
                 <span className="block bg-gradient-to-r from-accent-300 to-accent-500 bg-clip-text text-transparent">Sharing</span>
               </h1>
-              <p className="text-xl text-primary-100 mb-8 leading-relaxed relative z-10">
-                India's premier marketplace for second-hand books and academic materials. 
-                Connect with verified students and libraries for secure transactions.
+              <p className="text-base sm:text-xl text-primary-100 mb-6 sm:mb-8 leading-relaxed">
+                India's premier marketplace for second-hand books and academic materials.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 relative z-10">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Link to="/browse">
-                  <Button size="lg" className="bg-accent-500 hover:bg-accent-600 text-primary-900 font-semibold shadow-large border-0">
-                    Start Browsing
-                    <ArrowRightIcon className="h-5 w-5" />
+                  <Button size="lg" className="w-full sm:w-auto bg-accent-500 hover:bg-accent-600 text-primary-900 font-semibold">
+                    Start Browsing <ArrowRightIcon className="h-4 w-4" />
                   </Button>
                 </Link>
                 <Link to="/sell">
-                  <Button size="lg" variant="outline" className="border-2 border-accent-300 text-accent-300 hover:bg-accent-300 hover:text-primary-900 font-semibold">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-accent-300 text-accent-300 hover:bg-accent-300 hover:text-primary-900 font-semibold">
                     Sell Your Books
                   </Button>
                 </Link>
               </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8">
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="mt-8 lg:mt-0">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 sm:p-8">
                 <div className="relative">
-                  <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search for books, notes, or authors..."
-                    onKeyPress={(e) => e.key === 'Enter' && e.target.value && (window.location.href = `/browse?search=${encodeURIComponent(e.target.value)}`)}
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl text-gray-900 text-lg focus:ring-2 focus:ring-yellow-300 focus:outline-none"
-                  />
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input type="text" placeholder="Search for books, notes..." onKeyPress={(e) => e.key === 'Enter' && e.target.value && (window.location.href = `/browse?search=${encodeURIComponent(e.target.value)}`)} className="w-full pl-10 pr-4 py-3 rounded-xl text-gray-900 text-base focus:ring-2 focus:ring-yellow-300 focus:outline-none" />
                 </div>
-                <div className="mt-6">
-                  <p className="text-blue-100 mb-3">Popular categories:</p>
+                <div className="mt-4">
+                  <p className="text-blue-100 mb-2 text-sm">Popular categories:</p>
                   <div className="flex flex-wrap gap-2">
                     {categories.slice(0, 4).map((category) => (
-                      <span
-                        key={category}
-                        onClick={() => window.location.href = `/browse?category=${category}`}
-                        className="px-3 py-1 bg-white/20 rounded-full text-sm hover:bg-white/30 cursor-pointer transition-colors"
-                      >
-                        {category}
-                      </span>
+                      <span key={category} onClick={() => window.location.href = `/browse?category=${category}`} className="px-3 py-1 bg-white/20 rounded-full text-xs sm:text-sm hover:bg-white/30 cursor-pointer transition-colors">{category}</span>
                     ))}
                   </div>
                 </div>
@@ -215,42 +189,25 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-gray-50">
+      <section className="py-12 sm:py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-12">
+          <div className="flex justify-between items-center mb-6 sm:mb-10">
             <div>
-              <h2 className="text-4xl font-display font-bold text-secondary-900 mb-2">Trending Books</h2>
-              <p className="text-secondary-600">Most popular books this week</p>
+              <h2 className="text-2xl sm:text-4xl font-display font-bold text-secondary-900">Trending Books</h2>
+              <p className="text-secondary-600 text-sm sm:text-base">Most popular books this week</p>
             </div>
-            <Link to="/browse">
-              <Button variant="outline">
-                View All
-                <ArrowRightIcon className="h-4 w-4" />
-              </Button>
-            </Link>
+            <Link to="/browse"><Button variant="outline" size="sm">View All <ArrowRightIcon className="h-3 w-3" /></Button></Link>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
             {trendingBooks.map((book, index) => (
-              <motion.div
-                key={book.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card hover className="group cursor-pointer" onClick={() => window.location.href = '/book/1'}>
-                  <div className="aspect-[3/4] bg-gray-200 rounded-xl mb-4 overflow-hidden">
-                    <img 
-                      src={book.image}
-                      alt={book.title}
-                      className="w-full h-full object-cover"
-                    />
+              <motion.div key={book.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: index * 0.1 }}>
+                <Card hover className="group cursor-pointer" onClick={() => window.location.href = '/browse'}>
+                  <div className="aspect-[3/4] bg-gray-200 rounded-xl mb-3 overflow-hidden">
+                    <img src={book.image} alt={book.title} className="w-full h-full object-cover" />
                   </div>
-                  <h3 className="font-semibold text-secondary-900 mb-1 group-hover:text-primary-600 transition-colors">
-                    {book.title}
-                  </h3>
-                  <p className="text-sm text-secondary-600 mb-2">{book.author}</p>
-                  <p className="text-lg font-bold text-primary-600">{book.price}</p>
+                  <h3 className="font-semibold text-secondary-900 mb-1 group-hover:text-primary-600 text-xs sm:text-sm line-clamp-2">{book.title}</h3>
+                  <p className="text-xs text-secondary-600 mb-1 truncate">{book.author}</p>
+                  <p className="text-sm sm:text-base font-bold text-primary-600">{book.price}</p>
                 </Card>
               </motion.div>
             ))}
