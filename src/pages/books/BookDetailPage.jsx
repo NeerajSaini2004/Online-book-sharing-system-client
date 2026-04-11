@@ -15,19 +15,21 @@ import { Badge } from '../../components/ui/Badge';
 import { Rating } from '../../components/ui/Rating';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const API_BASE = 'https://online-book-sharing-system-backend.onrender.com';
 const FALLBACK_IMG = 'https://placehold.co/300x400/e2e8f0/64748b?text=No+Image';
 
 const getImageUrl = (url) => {
   if (!url) return FALLBACK_IMG;
-  if (url.startsWith('http')) return url;
-  return `${API_BASE}${url}`;
+  if (url.startsWith('http')) return url;  // Cloudinary or external URL
+  return `${API_BASE}${url}`;  // Local disk storage
 };
 
 export const BookDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -236,6 +238,7 @@ export const BookDetailPage = () => {
   }
 
   const bookImages = book.images?.map(img => getImageUrl(img.url)) || [FALLBACK_IMG];
+  const isOwnListing = user && book.seller && (user.id === book.seller._id || user._id === book.seller._id);
 
 
 
@@ -250,6 +253,7 @@ export const BookDetailPage = () => {
                 src={bookImages[selectedImage]}
                 alt={book.title}
                 className="w-full h-full object-cover"
+                onError={(e) => { e.target.src = FALLBACK_IMG; }}
               />
             </div>
             <div className="flex space-x-2">
@@ -325,15 +329,22 @@ export const BookDetailPage = () => {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <Button onClick={handleBuyNow} className="w-full" size="lg">
-                Buy Now
-              </Button>
-
-              <Button onClick={handleChatWithSeller} variant="outline" className="w-full">
-                <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
-                Chat with Seller
-              </Button>
-
+              {isOwnListing ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                  <p className="text-blue-700 font-medium">📖 This is your listing</p>
+                  <p className="text-blue-500 text-sm mt-1">You cannot buy or chat on your own listing</p>
+                </div>
+              ) : (
+                <>
+                  <Button onClick={handleBuyNow} className="w-full" size="lg">
+                    Buy Now
+                  </Button>
+                  <Button onClick={handleChatWithSeller} variant="outline" className="w-full">
+                    <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
+                    Chat with Seller
+                  </Button>
+                </>
+              )}
               {showOfferSuccess && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
                   Offer sent successfully!
