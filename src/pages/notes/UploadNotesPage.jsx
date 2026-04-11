@@ -72,19 +72,31 @@ export const UploadNotesPage = () => {
       Object.entries(formData).forEach(([key, val]) => data.append(key, val));
       data.append('notesFile', file);
       const token = localStorage.getItem('token');
-      await fetch(`https://online-book-sharing-system-backend.onrender.com/api/notes/upload`, {
+
+      if (!token) {
+        setToast({ type: 'error', message: 'Please login first to upload notes' });
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`https://online-book-sharing-system-backend.onrender.com/api/notes/upload`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: data
       });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        setToast({ type: 'error', message: result.message || 'Upload failed. Please try again.' });
+        return;
+      }
+
       setToast({ type: 'success', message: 'Notes uploaded successfully!' });
       setFormData({ title: '', subject: '', class: '', board: '', description: '', price: '', pages: '', isFree: false });
       setFile(null);
     } catch (error) {
-      setToast({
-        type: 'error',
-        message: 'Network error. Please try again.'
-      });
+      setToast({ type: 'error', message: 'Network error. Please try again.' });
     } finally {
       setLoading(false);
     }
