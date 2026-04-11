@@ -14,6 +14,17 @@ import { Badge } from '../../components/ui/Badge';
 import { categories, conditions, classes, boards, locations } from '../../data/books';
 import { apiService } from '../../services/api';
 
+const API_BASE = 'https://online-book-sharing-system-backend.onrender.com';
+const FALLBACK_IMG = 'https://placehold.co/300x400/e2e8f0/64748b?text=No+Image';
+
+const getImageUrl = (images) => {
+  if (!images || images.length === 0) return FALLBACK_IMG;
+  const url = images[0]?.url;
+  if (!url) return FALLBACK_IMG;
+  if (url.startsWith('http')) return url;
+  return `${API_BASE}${url}`;
+};
+
 export const SearchPage = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [showFilters, setShowFilters] = useState(false);
@@ -263,20 +274,12 @@ export const SearchPage = () => {
                   >
                     <Card hover className="cursor-pointer" onClick={() => window.location.href = `/book/${book._id}`}>
                       <div className="aspect-[3/4] bg-gray-200 rounded-xl mb-4 overflow-hidden">
-                        {book.images && book.images.length > 0 ? (
-                          <img 
-                            src={`https://online-book-sharing-system-backend.onrender.com${book.images[0].url}`}
-                            alt={book.title}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                            }}
-                          />
-                        ) : null}
-                        <div className="w-full h-full flex items-center justify-center text-gray-400" style={{display: book.images && book.images.length > 0 ? 'none' : 'flex'}}>
-                          No Image
-                        </div>
+                        <img
+                          src={getImageUrl(book.images)}
+                          alt={book.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => { e.target.src = FALLBACK_IMG; }}
+                        />
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-1">{book.title}</h3>

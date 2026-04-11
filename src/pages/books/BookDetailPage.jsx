@@ -16,6 +16,15 @@ import { Rating } from '../../components/ui/Rating';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
 
+const API_BASE = 'https://online-book-sharing-system-backend.onrender.com';
+const FALLBACK_IMG = 'https://placehold.co/300x400/e2e8f0/64748b?text=No+Image';
+
+const getImageUrl = (url) => {
+  if (!url) return FALLBACK_IMG;
+  if (url.startsWith('http')) return url;
+  return `${API_BASE}${url}`;
+};
+
 export const BookDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -226,7 +235,7 @@ export const BookDetailPage = () => {
     );
   }
 
-  const bookImages = book.images?.map(img => `https://online-book-sharing-system-backend.onrender.com${img.url}`) || ['https://via.placeholder.com/300x400'];
+  const bookImages = book.images?.map(img => getImageUrl(img.url)) || [FALLBACK_IMG];
 
 
 
