@@ -124,6 +124,8 @@ export const StudentDashboard = () => {
     } catch { alert('Failed to update order'); }
   };
   const loadWishlist = async () => {
+    try {
+      const response = await apiService.getWishlist();
       if (response.success) {
         const mapped = response.data.map(w => ({
           id: w.listing?._id || w._id,
