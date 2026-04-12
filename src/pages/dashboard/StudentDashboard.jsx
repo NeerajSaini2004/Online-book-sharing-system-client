@@ -83,6 +83,7 @@ export const StudentDashboard = () => {
       setInbox(prev => prev.filter(m => m._id !== msgId));
     } catch {}
   };
+  const markRead = async (msgId) => {
     try {
       const token = localStorage.getItem('token');
       await fetch(`https://online-book-sharing-system-backend.onrender.com/api/users/inbox/${msgId}/read`, {
