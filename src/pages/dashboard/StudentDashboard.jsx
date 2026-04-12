@@ -111,6 +111,7 @@ export const StudentDashboard = () => {
           amount: o.amount || o.totalAmount || 0,
           status: o.deliveryStatus || o.status || 'Pending',
           orderDate: new Date(o.createdAt).toLocaleDateString(),
+          trackingId: o.trackingId || '',
           image: o.bookImage || (o.listing?.images?.[0]?.url
             ? `https://online-book-sharing-system-backend.onrender.com${o.listing.images[0].url}`
             : null)
@@ -730,30 +731,32 @@ export const StudentDashboard = () => {
           </div>
         )}
 
-        {/* Track Order Modal */}
         {showTrackModal && selectedItem && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <Card className="max-w-md w-full mx-4">
               <h3 className="text-xl font-bold mb-4">Track Order</h3>
               <div className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded">
+                <div className="bg-gray-50 p-4 rounded-xl">
                   <p className="font-semibold">{selectedItem.title}</p>
-                  <p className="text-sm text-gray-600">Order Status: {selectedItem.status}</p>
-                  <p className="text-sm text-gray-600">Tracking: TRK{selectedItem.id}234567</p>
+                  <p className="text-sm text-gray-600">Seller: {selectedItem.seller}</p>
+                  <p className="text-sm text-gray-600">Amount: ₹{selectedItem.amount}</p>
+                  {selectedItem.trackingId && <p className="text-sm text-blue-600 mt-1">Tracking ID: {selectedItem.trackingId}</p>}
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <p className="text-sm">Order Placed - {selectedItem.orderDate}</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <p className="text-sm">Order Confirmed</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-3 h-3 ${selectedItem.status === 'delivered' ? 'bg-green-500' : 'bg-gray-300'} rounded-full`}></div>
-                    <p className="text-sm">Delivered</p>
-                  </div>
+                <div className="space-y-3">
+                  {['Pending', 'Shipped', 'Out for Delivery', 'Delivered'].map((step, idx) => {
+                    const statusOrder = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered'];
+                    const currentIdx = statusOrder.indexOf(selectedItem.status);
+                    const isDone = idx <= currentIdx;
+                    return (
+                      <div key={step} className="flex items-center space-x-3">
+                        <div className={`w-4 h-4 rounded-full flex-shrink-0 ${isDone ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                        <div>
+                          <p className={`text-sm font-medium ${isDone ? 'text-green-700' : 'text-gray-400'}`}>{step}</p>
+                          {idx === currentIdx && <p className="text-xs text-gray-500">Current Status</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
                 <Button onClick={() => setShowTrackModal(false)} className="w-full">Close</Button>
               </div>

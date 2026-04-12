@@ -59,7 +59,6 @@ export const LibraryDashboard = () => {
         apiService.getMySales()
       ]);
 
-      // Process listings/inventory
       const listings = listingsRes.status === 'fulfilled' ? listingsRes.value.data || [] : [];
       const mappedInventory = listings.map(l => ({
         id: l._id,
@@ -72,19 +71,21 @@ export const LibraryDashboard = () => {
       }));
       setInventory(mappedInventory);
 
-      // Process orders
       const orders = ordersRes.status === 'fulfilled' ? ordersRes.value.data || [] : [];
       const mappedOrders = orders.map(o => ({
         id: o._id,
-        book: o.listing?.title || 'Unknown Book',
-        buyer: o.buyer?.name || 'Unknown Buyer',
-        amount: o.totalAmount || o.price || 0,
-        status: o.status || 'pending',
+        book: o.bookTitle || 'Unknown Book',
+        buyer: o.buyerName || 'Unknown Buyer',
+        amount: o.amount || 0,
+        status: o.deliveryStatus || 'Pending',
+        paymentMethod: o.paymentMethod || 'cod',
+        paymentStatus: o.paymentStatus || 'Pending',
+        address: o.deliveryAddress || '',
+        trackingId: o.trackingId || '',
         date: new Date(o.createdAt).toLocaleDateString()
       }));
       setRecentOrders(mappedOrders);
 
-      // Calculate stats
       const now = new Date();
       const thisMonthOrders = mappedOrders.filter(o => {
         const d = new Date(o.date);
@@ -101,21 +102,36 @@ export const LibraryDashboard = () => {
         { label: 'Orders This Month', value: thisMonthOrders.length.toString(), icon: ShoppingBagIcon, color: 'text-orange-600' }
       ]);
 
-      // Category analytics
       const catCount = {};
       listings.forEach(l => { catCount[l.category] = (catCount[l.category] || 0) + 1; });
       const total = listings.length || 1;
-      const topCats = Object.entries(catCount)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
+      const topCats = Object.entries(catCount).sort((a, b) => b[1] - a[1]).slice(0, 5)
         .map(([name, count]) => ({ name, percent: Math.round((count / total) * 100) }));
-
       setAnalytics({ monthSales: monthRevenue, totalSold: mappedOrders.length, avgOrder, categories: topCats });
     } catch (err) {
       console.error('Dashboard load error:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateOrderStatus = async (orderId, newStatus, tracking) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`https://online-book-sharing-system-backend.onrender.com/api/orders/update-status/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ deliveryStatus: newStatus, trackingId: tracking })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRecentOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus, trackingId: tracking } : o));
+        setShowProcessModal(false);
+        alert(`✅ Order updated!\nStatus: ${newStatus}${tracking ? '\nTracking: ' + tracking : ''}`);
+      } else {
+        alert('Failed: ' + data.message);
+      }
+    } catch { alert('Failed to update order'); }
   };
 
   const generateInvoice = (order) => {
@@ -380,39 +396,45 @@ Orders This Month: ${stats[3]?.value || 0}
           {activeTab === 'orders' && (
             <Card>
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-display font-bold text-secondary-900">Order Management</h3>
-                <div className="flex space-x-2">
-                  <Button onClick={() => alert('Orders filtered successfully')} variant="outline" size="sm">Filter</Button>
-                  <Button onClick={() => alert('Report exported successfully')} variant="outline" size="sm">Export</Button>
+                <h3 className="text-lg font-display font-bold text-secondary-900">Incoming Orders</h3>
+                <Button onClick={loadDashboardData} variant="outline" size="sm">Refresh</Button>
+              </div>
+              {recentOrders.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-4xl mb-3">📦</p>
+                  <p className="text-gray-500">No orders yet</p>
+                  <p className="text-sm text-gray-400 mt-1">Orders from buyers will appear here</p>
                 </div>
-              </div>
-              <div className="space-y-4">
-                {recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center space-x-4 p-4 border border-secondary-200 rounded-xl shadow-soft hover:shadow-medium transition-all duration-200">
-                    <div className="w-16 h-20 bg-secondary-200 rounded overflow-hidden flex-shrink-0">
-                      <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                        <ShoppingBagIcon className="h-8 w-8 text-green-600" />
+              ) : (
+                <div className="space-y-4">
+                  {recentOrders.map((order) => (
+                    <div key={order.id} className="p-4 border border-secondary-200 rounded-xl hover:shadow-medium transition-all">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-secondary-900">{order.book}</h4>
+                          <p className="text-sm text-secondary-600">Buyer: {order.buyer}</p>
+                          <p className="text-xs text-secondary-500">{order.date}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-primary-600">₹{order.amount}</p>
+                          <Badge variant={order.status === 'Delivered' ? 'success' : order.status === 'Shipped' ? 'primary' : 'warning'}>
+                            {order.status}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                        <span className="bg-gray-100 px-2 py-1 rounded">Payment: {order.paymentMethod?.toUpperCase()} - {order.paymentStatus}</span>
+                        {order.trackingId && <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded">Tracking: {order.trackingId}</span>}
+                      </div>
+                      {order.address && <p className="text-xs text-gray-500 mb-3">📍 {order.address}</p>}
+                      <div className="flex gap-2">
+                        <Button onClick={() => { setSelectedOrder(order); setOrderStatus(order.status); setTrackingNumber(order.trackingId || ''); setShowProcessModal(true); }} size="sm">Update Status</Button>
+                        <Button onClick={() => generateInvoice(order)} variant="outline" size="sm">Invoice</Button>
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-secondary-900">{order.book}</h4>
-                      <p className="text-sm text-secondary-600 mb-2">Buyer: {order.buyer}</p>
-                      <div className="flex items-center space-x-4 text-sm">
-                        <span className="text-secondary-600">Amount: ₹{order.amount}</span>
-                        <span className="text-secondary-600">{order.date}</span>
-                        <Badge variant={order.status === 'completed' ? 'success' : 'warning'}>
-                          {order.status}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button onClick={() => { setSelectedOrder(order); setOrderStatus(order.status); setTrackingNumber(''); setShowProcessModal(true); }} variant="outline" size="sm">Process</Button>
-                      <Button onClick={() => generateInvoice(order)} variant="outline" size="sm">Invoice</Button>
-                      <Button onClick={() => { setSelectedOrder(order); setShowChatModal(true); setChatMessages([{ sender: 'buyer', text: `Hi, I ordered ${order.book}` }]); }} size="sm">Chat</Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Card>
           )}
 
@@ -500,35 +522,34 @@ Orders This Month: ${stats[3]?.value || 0}
           )}
         </div>
 
-        {/* Process Order Modal */}
         {showProcessModal && selectedOrder && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <Card className="max-w-md w-full mx-4">
-              <h3 className="text-xl font-bold mb-4">Process Order</h3>
+              <h3 className="text-xl font-bold mb-4">Update Order Status</h3>
               <div className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded">
-                  <p className="text-sm text-gray-600">Order ID: #{selectedOrder.id}</p>
+                <div className="bg-gray-50 p-4 rounded-xl">
                   <p className="font-semibold">{selectedOrder.book}</p>
-                  <p className="text-sm">Buyer: {selectedOrder.buyer}</p>
-                  <p className="text-sm">Amount: ₹{selectedOrder.amount}</p>
+                  <p className="text-sm text-gray-600">Buyer: {selectedOrder.buyer}</p>
+                  <p className="text-sm text-gray-600">Amount: ₹{selectedOrder.amount}</p>
+                  <p className="text-sm text-gray-600">Payment: {selectedOrder.paymentMethod?.toUpperCase()} - {selectedOrder.paymentStatus}</p>
+                  {selectedOrder.address && <p className="text-sm text-gray-600 mt-1">📍 {selectedOrder.address}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Update Status</label>
-                  <select value={orderStatus} onChange={(e) => setOrderStatus(e.target.value)} className="w-full p-2 border rounded">
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
+                  <label className="block text-sm font-medium mb-2">Delivery Status</label>
+                  <select value={orderStatus} onChange={(e) => setOrderStatus(e.target.value)} className="w-full p-2 border rounded-lg">
+                    <option value="Pending">Pending</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Out for Delivery">Out for Delivery</option>
+                    <option value="Delivered">Delivered</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Tracking Number (Optional)</label>
-                  <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} placeholder="Enter tracking number" className="w-full p-2 border rounded" />
+                  <input type="text" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} placeholder="e.g. TRK123456" className="w-full p-2 border rounded-lg" />
                 </div>
                 <div className="flex space-x-2">
                   <Button onClick={() => setShowProcessModal(false)} variant="outline" className="flex-1">Cancel</Button>
-                  <Button onClick={() => { selectedOrder.status = orderStatus; alert(`Order updated!\nStatus: ${orderStatus}${trackingNumber ? '\nTracking: ' + trackingNumber : ''}`); setShowProcessModal(false); }} className="flex-1">Update Order</Button>
+                  <Button onClick={() => updateOrderStatus(selectedOrder.id, orderStatus, trackingNumber)} className="flex-1">Update Order</Button>
                 </div>
               </div>
             </Card>
