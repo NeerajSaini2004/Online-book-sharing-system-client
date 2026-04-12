@@ -36,10 +36,10 @@ function AppContent() {
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
         <Navbar />
         
-        <main className="flex-1">
+        <main className="flex-1 w-full">
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
