@@ -148,25 +148,41 @@ export const BookDetailPage = () => {
   const saveOrder = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (token) {
-        await fetch('https://online-book-sharing-system-backend.onrender.com/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({
-            bookId: book._id,
-            bookTitle: book.title,
-            bookImage: bookImages[0],
-            sellerId: book.seller?._id,
-            sellerName: book.seller?.name,
-            deliveryAddress,
-            amount: book.price,
-            paymentMethod,
-            paymentStatus: paymentMethod === 'online' ? 'Paid' : 'Pending'
-          })
-        });
+      if (!token) {
+        alert('Please login to place order');
+        return;
+      }
+
+      if (!book.seller?._id) {
+        alert('Seller information missing. Cannot place order.');
+        return;
+      }
+
+      const res = await fetch('https://online-book-sharing-system-backend.onrender.com/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          bookId: book._id,
+          bookTitle: book.title,
+          bookImage: bookImages[0],
+          sellerId: book.seller._id,
+          sellerName: book.seller.name,
+          deliveryAddress,
+          amount: book.price,
+          paymentMethod,
+          paymentStatus: paymentMethod === 'online' ? 'Paid' : 'Pending'
+        })
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        alert('Failed to place order: ' + data.message);
+        return;
       }
     } catch (err) {
       console.error('Order save error:', err);
+      alert('Failed to place order. Please try again.');
+      return;
     }
     alert(`✅ Order placed!\nBook: ${book.title}\nAmount: ₹${book.price}`);
     setShowCheckoutModal(false);
