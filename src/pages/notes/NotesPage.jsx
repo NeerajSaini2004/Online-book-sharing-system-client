@@ -205,12 +205,12 @@ export const NotesPage = () => {
                       />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" size="sm">{note.subject}</Badge>
+                      <div className="flex items-center gap-1 mb-2 flex-wrap">
+                        <Badge variant="outline" size="sm" className="truncate max-w-[120px]">{note.subject}</Badge>
                         <Badge variant="outline" size="sm">{note.class}</Badge>
                       </div>
-                      <h3 className="font-semibold text-gray-900 mb-1">{note.title}</h3>
-                      <p className="text-sm text-gray-600 mb-2">by {note.author}</p>
+                      <h3 className="font-semibold text-gray-900 mb-1 text-sm line-clamp-2">{note.title}</h3>
+                      <p className="text-xs text-gray-600 mb-2 truncate">by {note.author}</p>
                       
                       <div className="flex items-center mb-2">
                         <div className="flex items-center">
