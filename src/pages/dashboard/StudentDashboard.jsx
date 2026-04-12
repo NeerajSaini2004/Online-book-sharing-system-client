@@ -46,6 +46,8 @@ export const StudentDashboard = () => {
   const [wishlist, setWishlist] = useState([]);
   const [myOrders, setMyOrders] = useState([]);
   const [inbox, setInbox] = useState([]);
+  const [replyTo, setReplyTo] = useState(null);
+  const [replyText, setReplyText] = useState('');
 
   useEffect(() => {
     loadMyListings();
@@ -104,19 +106,18 @@ export const StudentDashboard = () => {
       if (response.success) {
         const mapped = response.data.map(o => ({
           id: o._id,
-          title: o.listing?.title || 'Unknown Book',
-          seller: o.seller?.name || 'Unknown Seller',
-          amount: o.totalAmount || o.price || 0,
-          status: o.status || 'pending',
+          title: o.bookTitle || o.listing?.title || 'Unknown Book',
+          seller: o.sellerName || o.seller?.name || 'Unknown Seller',
+          amount: o.amount || o.totalAmount || 0,
+          status: o.deliveryStatus || o.status || 'Pending',
           orderDate: new Date(o.createdAt).toLocaleDateString(),
-          image: o.listing?.images?.[0]?.url
+          image: o.bookImage || (o.listing?.images?.[0]?.url
             ? `https://online-book-sharing-system-backend.onrender.com${o.listing.images[0].url}`
-            : null
+            : null)
         }));
         setMyOrders(mapped);
       }
     } catch (error) {
-      // fallback to localStorage
       const saved = JSON.parse(localStorage.getItem('myOrders') || '[]');
       setMyOrders(saved);
     }
@@ -500,29 +501,64 @@ export const StudentDashboard = () => {
               ) : (
                 <div className="space-y-3">
                   {inbox.map((msg) => (
-                    <div
-                      key={msg._id}
-                      onClick={() => markRead(msg._id)}
-                      className={`p-4 rounded-xl border cursor-pointer transition-colors ${
-                        !msg.read ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-sm font-bold text-primary-600">
-                            {msg.fromName?.charAt(0).toUpperCase() || '?'}
+                    <div key={msg._id} className={`rounded-xl border transition-colors ${ !msg.read ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="p-4 cursor-pointer" onClick={() => { markRead(msg._id); setReplyTo(replyTo?._id === msg._id ? null : msg); setReplyText(''); }}>
+                        <div className="flex items-start justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-sm font-bold text-primary-600">
+                              {msg.fromName?.charAt(0).toUpperCase() || '?'}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-sm">{msg.fromName || 'Buyer'}</p>
+                              <p className="text-xs text-gray-500">{new Date(msg.createdAt).toLocaleDateString()}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold text-sm">{msg.fromName || 'Buyer'}</p>
-                            <p className="text-xs text-gray-500">{new Date(msg.createdAt).toLocaleDateString()}</p>
+                          <div className="flex items-center gap-2">
+                            {!msg.read && <span className="w-2 h-2 bg-blue-500 rounded-full"></span>}
+                            <span className="text-xs text-primary-600">{replyTo?._id === msg._id ? 'Close ▲' : 'Reply ▼'}</span>
                           </div>
                         </div>
-                        {!msg.read && <span className="w-2 h-2 bg-blue-500 rounded-full mt-1"></span>}
+                        {msg.bookTitle && <p className="text-xs text-primary-600 mb-1">📚 {msg.bookTitle}</p>}
+                        <p className="text-sm text-gray-700">{msg.message}</p>
                       </div>
-                      {msg.bookTitle && (
-                        <p className="text-xs text-primary-600 mb-1">📚 {msg.bookTitle}</p>
+
+                      {replyTo?._id === msg._id && (
+                        <div className="px-4 pb-4 border-t border-gray-200 pt-3">
+                          <p className="text-xs text-gray-500 mb-2">Reply to {msg.fromName} — your reply will go to their inbox</p>
+                          <textarea
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            rows={3}
+                            placeholder="Type your reply..."
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 resize-none"
+                          />
+                          <div className="flex gap-2 mt-2">
+                            <Button size="sm" variant="outline" onClick={() => { setReplyTo(null); setReplyText(''); }}>Cancel</Button>
+                            <Button size="sm" onClick={async () => {
+                              if (!replyText.trim()) return;
+                              try {
+                                const token = localStorage.getItem('token');
+                                const res = await fetch('https://online-book-sharing-system-backend.onrender.com/api/users/message', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                  body: JSON.stringify({
+                                    sellerId: msg.from?._id || msg.from,
+                                    bookId: msg.bookId,
+                                    bookTitle: msg.bookTitle,
+                                    message: replyText.trim()
+                                  })
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                  alert('✅ Reply sent!');
+                                  setReplyTo(null);
+                                  setReplyText('');
+                                }
+                              } catch { alert('Failed to send reply'); }
+                            }}>Send Reply</Button>
+                          </div>
+                        </div>
                       )}
-                      <p className="text-sm text-gray-700">{msg.message}</p>
                     </div>
                   ))}
                 </div>

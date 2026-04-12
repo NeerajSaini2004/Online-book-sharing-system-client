@@ -145,30 +145,30 @@ export const BookDetailPage = () => {
     }
   };
 
-  const saveOrder = () => {
-    const ordersKey = 'myOrders';
-    const existingOrders = JSON.parse(localStorage.getItem(ordersKey) || '[]');
-    
-    let orderImage = 'https://via.placeholder.com/300x400?text=Book';
-    if (bookImages[0] && !bookImages[0].includes('localhost')) {
-      orderImage = bookImages[0];
+  const saveOrder = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await fetch('https://online-book-sharing-system-backend.onrender.com/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            bookId: book._id,
+            bookTitle: book.title,
+            bookImage: bookImages[0],
+            sellerId: book.seller?._id,
+            sellerName: book.seller?.name,
+            deliveryAddress,
+            amount: book.price,
+            paymentMethod,
+            paymentStatus: paymentMethod === 'online' ? 'Paid' : 'Pending'
+          })
+        });
+      }
+    } catch (err) {
+      console.error('Order save error:', err);
     }
-    
-    const newOrder = {
-      id: Date.now(),
-      title: book.title,
-      seller: book.seller?.name || 'Seller',
-      amount: book.price,
-      status: 'shipped',
-      orderDate: 'Just now',
-      image: orderImage,
-      address: deliveryAddress,
-      paymentMethod: paymentMethod
-    };
-    existingOrders.unshift(newOrder);
-    localStorage.setItem(ordersKey, JSON.stringify(existingOrders));
-    
-    alert(`Order placed successfully!\nBook: ${book.title}\nAmount: ₹${book.price}`);
+    alert(`✅ Order placed!\nBook: ${book.title}\nAmount: ₹${book.price}`);
     setShowCheckoutModal(false);
     navigate('/student/dashboard');
   };
