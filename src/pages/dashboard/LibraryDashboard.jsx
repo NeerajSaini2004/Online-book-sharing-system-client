@@ -75,6 +75,16 @@ export const LibraryDashboard = () => {
     } catch {}
   };
 
+  const deleteInboxMsg = async (msgId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`https://online-book-sharing-system-backend.onrender.com/api/users/inbox/${msgId}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+      });
+      setInbox(prev => prev.filter(m => m._id !== msgId));
+    } catch {}
+  };
+
   const loadDashboardData = async () => {
     setLoading(true);
     try {
@@ -529,6 +539,10 @@ Orders This Month: ${stats[3]?.value || 0}
                           </div>
                         </div>
                         {!msg.read && <span className="w-2 h-2 bg-orange-500 rounded-full mt-1"></span>}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); if(window.confirm('Delete this message?')) deleteInboxMsg(msg._id); }}
+                            className="text-xs text-red-400 hover:text-red-600 px-1"
+                          >✕</button>
                       </div>
                       {msg.bookTitle && <p className="text-xs text-primary-600 mb-1">📚 {msg.bookTitle}</p>}
                       <p className="text-sm text-gray-700">{msg.message}</p>

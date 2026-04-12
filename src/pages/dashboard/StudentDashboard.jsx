@@ -74,7 +74,15 @@ export const StudentDashboard = () => {
     } catch {}
   };
 
-  const markRead = async (msgId) => {
+  const deleteInboxMsg = async (msgId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`https://online-book-sharing-system-backend.onrender.com/api/users/inbox/${msgId}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+      });
+      setInbox(prev => prev.filter(m => m._id !== msgId));
+    } catch {}
+  };
     try {
       const token = localStorage.getItem('token');
       await fetch(`https://online-book-sharing-system-backend.onrender.com/api/users/inbox/${msgId}/read`, {
@@ -182,8 +190,8 @@ export const StudentDashboard = () => {
   };
 
   const stats = [
-    { label: 'Books Sold', value: myListings.filter(l => l.status === 'sold').length.toString(), icon: BookOpenIcon, color: 'text-green-600' },
-    { label: 'Total Earnings', value: '₹' + myListings.filter(l => l.status === 'sold').reduce((sum, l) => sum + (l.price || 0), 0).toLocaleString(), icon: CurrencyRupeeIcon, color: 'text-blue-600' },
+    { label: 'Books Sold', value: mySales.filter(s => s.status === 'Delivered').length.toString(), icon: BookOpenIcon, color: 'text-green-600' },
+    { label: 'Total Earnings', value: '₹' + mySales.filter(s => s.status === 'Delivered').reduce((sum, s) => sum + (s.amount || 0), 0).toLocaleString(), icon: CurrencyRupeeIcon, color: 'text-blue-600' },
     { label: 'Active Listings', value: myListings.filter(l => l.status === 'active').length.toString(), icon: EyeIcon, color: 'text-purple-600' },
     { label: 'Wishlist Items', value: wishlist.length.toString(), icon: HeartIcon, color: 'text-red-600' }
   ];
@@ -615,6 +623,12 @@ export const StudentDashboard = () => {
                           <div className="flex items-center gap-2">
                             {!msg.read && <span className="w-2 h-2 bg-blue-500 rounded-full"></span>}
                             <span className="text-xs text-primary-600">{replyTo?._id === msg._id ? 'Close ▲' : 'Reply ▼'}</span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); if(window.confirm('Delete this message?')) deleteInboxMsg(msg._id); }}
+                              className="text-xs text-red-400 hover:text-red-600 px-1"
+                            >
+                              ✕
+                            </button>
                           </div>
                         </div>
                         {msg.bookTitle && <p className="text-xs text-primary-600 mb-1">📚 {msg.bookTitle}</p>}
