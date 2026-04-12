@@ -37,6 +37,7 @@ export const BookDetailPage = () => {
   const [offerAmount, setOfferAmount] = useState('');
   const [showOfferSuccess, setShowOfferSuccess] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [deliveryAddress, setDeliveryAddress] = useState('');
 
@@ -183,7 +184,7 @@ export const BookDetailPage = () => {
   };
 
   const handleChatWithSeller = () => {
-    navigate('/chat', { state: { sellerId: book.seller?._id, bookId: id, bookTitle: book.title } });
+    setShowContactModal(true);
   };
 
   const handleWishlist = () => {
@@ -396,6 +397,56 @@ export const BookDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Contact Seller Modal */}
+      {showContactModal && book && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="max-w-sm w-full">
+            <div className="text-center mb-4">
+              <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span className="text-xl font-bold text-primary-600">{book.seller?.name?.charAt(0).toUpperCase() || 'S'}</span>
+              </div>
+              <h3 className="text-lg font-bold">Message Seller</h3>
+              <p className="text-sm text-gray-500">About: {book.title}</p>
+            </div>
+
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const msg = e.target.elements.msg.value.trim();
+              if (!msg) return;
+              try {
+                const token = localStorage.getItem('token');
+                if (!token) { alert('Please login to send message'); return; }
+                const res = await fetch('https://online-book-sharing-system-backend.onrender.com/api/users/message', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ sellerId: book.seller?._id, bookId: id, bookTitle: book.title, message: msg })
+                });
+                const data = await res.json();
+                if (data.success) {
+                  alert('✅ Message sent! Seller will respond soon.');
+                  setShowContactModal(false);
+                } else {
+                  alert(data.message || 'Failed to send message');
+                }
+              } catch { alert('Failed to send message'); }
+            }} className="space-y-3">
+              <textarea
+                name="msg"
+                rows={4}
+                placeholder={`Hi, I'm interested in your book "${book.title}" listed for \u20b9${book.price}. Is it still available?`}
+                className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 resize-none"
+                required
+              />
+              <p className="text-xs text-gray-400">🔒 Your contact info is not shared with the seller</p>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setShowContactModal(false)}>Cancel</Button>
+                <Button type="submit" className="flex-1">Send Message</Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
 
       {/* Checkout Modal */}
       {showCheckoutModal && (
