@@ -6,10 +6,19 @@ import { Card } from '../../components/ui/Card';
 import { apiService } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
-const categories = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'English', 'History', 'Geography', 'Economics', 'Commerce', 'Engineering', 'Medical', 'Other'];
+const engineeringCategories = [
+  'Computer Science Engineering', 'Mechanical Engineering', 'Civil Engineering',
+  'Electrical Engineering', 'Electronics & Communication', 'Chemical Engineering',
+  'Aerospace Engineering', 'Biotechnology', 'Information Technology', 'Data Science'
+];
+
+const generalCategories = [
+  'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science',
+  'English', 'History', 'Geography', 'Economics', 'Commerce', 'Medical', 'Other'
+];
+
 const conditions = ['Like New', 'Good', 'Fair', 'Poor'];
-const classList = ['9th', '10th', '11th', '12th', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduation', 'Other'];
-const boards = ['CBSE', 'ICSE', 'State Board', 'IGCSE', 'IB', 'Other'];
+const classList = ['9th', '10th', '11th', '12th', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Engineering', 'Graduation', 'Other'];
 
 export const SellPage = () => {
   const navigate = useNavigate();
@@ -20,13 +29,18 @@ export const SellPage = () => {
     price: '',
     originalPrice: '',
     condition: 'Good',
-    category: 'Mathematics',
+    category: '',
     class: '12th',
-    board: 'CBSE',
     description: '',
     images: [],
     imageFiles: []
   });
+
+  const getCategories = () => formData.class === 'Engineering' ? engineeringCategories : generalCategories;
+
+  const handleClassChange = (val) => {
+    setFormData({ ...formData, class: val, category: '' });
+  };
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -71,7 +85,6 @@ export const SellPage = () => {
         condition: formData.condition,
         category: formData.category,
         class: formData.class,
-        board: formData.board,
         description: formData.description || 'No description provided',
         status: 'active'
       };
@@ -165,14 +178,13 @@ export const SellPage = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Class *</label>
                     <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      value={formData.class}
+                      onChange={(e) => handleClassChange(e.target.value)}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      required
                     >
-                      {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                      {classList.map(cls => <option key={cls} value={cls}>{cls}</option>)}
                     </select>
                   </div>
                   <div>
@@ -188,27 +200,25 @@ export const SellPage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Class</label>
-                    <select
-                      value={formData.class}
-                      onChange={(e) => setFormData({ ...formData, class: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    >
-                      {classList.map(cls => <option key={cls} value={cls}>{cls}</option>)}
-                    </select>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {getCategories().map(cat => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, category: cat })}
+                        className={`px-3 py-2 rounded-lg text-sm border transition-all ${
+                          formData.category === cat
+                            ? 'bg-primary-600 text-white border-primary-600 font-medium'
+                            : 'bg-white text-gray-600 border-gray-300 hover:border-primary-400 hover:text-primary-600'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Board</label>
-                    <select
-                      value={formData.board}
-                      onChange={(e) => setFormData({ ...formData, board: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    >
-                      {boards.map(b => <option key={b} value={b}>{b}</option>)}
-                    </select>
-                  </div>
+                  {!formData.category && <p className="text-xs text-red-500 mt-1">Please select a category</p>}
                 </div>
 
                 <div>
@@ -276,7 +286,7 @@ export const SellPage = () => {
                     <p className="text-lg font-bold text-primary-600">₹{formData.price || '0'}</p>
                     <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">{formData.condition}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{formData.category} • {formData.class} • {formData.board}</p>
+                  <p className="text-xs text-gray-500 mt-1">{formData.category} • {formData.class}</p>
                 </Card>
               </div>
             </Card>

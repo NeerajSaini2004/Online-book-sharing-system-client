@@ -119,52 +119,40 @@ export const UploadNotesPage = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Title *
-                </label>
-                <Input
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="Enter notes title"
-                  required
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                <Input name="title" value={formData.title} onChange={handleInputChange} placeholder="Enter notes title" required />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subject *
-                </label>
-                <select
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select Subject</option>
-                  {getSubjects().map(subject => (
-                    <option key={subject} value={subject}>{subject}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Class *
-                </label>
-                <select
-                  name="class"
-                  value={formData.class}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  required
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-2">Class *</label>
+                <select name="class" value={formData.class} onChange={handleInputChange} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
                   <option value="">Select Class</option>
-                  {classes.map(cls => (
-                    <option key={cls} value={cls}>{cls}</option>
-                  ))}
+                  {classes.map(cls => <option key={cls} value={cls}>{cls}</option>)}
                 </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+                {!formData.class ? (
+                  <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-400 text-sm">Please select a class first</div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {getSubjects().map(subject => (
+                      <button
+                        key={subject}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, subject })}
+                        className={`px-3 py-2 rounded-lg text-sm border transition-all text-left ${
+                          formData.subject === subject
+                            ? 'bg-primary-600 text-white border-primary-600 font-medium'
+                            : 'bg-white text-gray-600 border-gray-300 hover:border-primary-400 hover:text-primary-600'
+                        }`}
+                      >
+                        {subject}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
