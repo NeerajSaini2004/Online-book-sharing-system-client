@@ -153,6 +153,7 @@ export const StudentDashboard = () => {
           id: o._id,
           title: o.bookTitle || o.listing?.title || 'Unknown Book',
           seller: o.sellerName || o.seller?.name || 'Unknown Seller',
+          sellerId: o.sellerId || o.seller?._id || null,
           amount: o.amount || o.totalAmount || 0,
           status: o.deliveryStatus || o.status || 'Pending',
           orderDate: new Date(o.createdAt).toLocaleDateString(),
@@ -861,33 +862,78 @@ export const StudentDashboard = () => {
           </div>
         )}
 
-        {/* Chat Modal */}
+        {/* Chat Modal - sends message to seller inbox */}
         {showChatModal && selectedItem && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg w-full max-w-md flex flex-col" style={{height: '480px'}}>
+            <div className="bg-white rounded-xl w-full max-w-md flex flex-col shadow-xl">
               <div className="flex items-center justify-between p-4 border-b">
-                <h3 className="text-lg font-bold">Chat with {selectedItem.seller}</h3>
+                <div>
+                  <h3 className="text-lg font-bold">Message Seller</h3>
+                  <p className="text-xs text-gray-500">{selectedItem.seller} • {selectedItem.title}</p>
+                </div>
                 <button onClick={() => setShowChatModal(false)} className="p-2 hover:bg-gray-100 rounded-full">
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {chatMessages.length === 0 && (
-                  <p className="text-center text-gray-400 text-sm mt-8">Start a conversation</p>
-                )}
-                {chatMessages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs px-3 py-2 rounded-lg text-sm ${msg.sender === 'me' ? 'bg-primary-500 text-white' : 'bg-gray-100 text-gray-800'}`}>
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t p-3">
-                <form onSubmit={(e) => { e.preventDefault(); const input = e.target.elements.msg; if(input.value.trim()) { setChatMessages([...chatMessages, { sender: 'me', text: input.value }]); input.value = ''; }}} className="flex gap-2">
-                  <input name="msg" type="text" placeholder="Type a message..." className="flex-1 p-2 border rounded-lg text-sm" />
-                  <Button type="submit" size="sm">Send</Button>
-                </form>
+
+              <div className="p-4 space-y-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                  <p className="text-xs text-blue-700">🔒 Your message will be sent securely to the seller's inbox. They will reply back to your inbox.</p>
+                </div>
+
+                <div className="space-y-2">
+                  {[
+                    `Hi, I ordered "${selectedItem.title}". When will it be shipped?`,
+                    'Can you share the tracking details?',
+                    'I have a question about my order.',
+                  ].map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      onClick={() => setChatMessages([{ text: suggestion }])}
+                      className="w-full text-left text-sm px-3 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+
+                <textarea
+                  value={chatMessages[0]?.text || ''}
+                  onChange={(e) => setChatMessages([{ text: e.target.value }])}
+                  rows={3}
+                  placeholder="Type your message to the seller..."
+                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 resize-none"
+                />
+
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setShowChatModal(false)}>Cancel</Button>
+                  <Button className="flex-1" onClick={async () => {
+                    const msg = chatMessages[0]?.text?.trim();
+                    if (!msg) { alert('Please enter a message'); return; }
+                    if (!selectedItem.sellerId) { alert('Seller info not available'); return; }
+                    try {
+                      const token = localStorage.getItem('token');
+                      const res = await fetch('https://online-book-sharing-system-backend.onrender.com/api/users/message', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({
+                          sellerId: selectedItem.sellerId,
+                          bookId: selectedItem.id,
+                          bookTitle: selectedItem.title,
+                          message: msg
+                        })
+                      });
+                      const data = await res.json();
+                      if (data.success) {
+                        alert('✅ Message sent! Seller will reply to your Inbox.');
+                        setShowChatModal(false);
+                        setChatMessages([]);
+                      } else {
+                        alert(data.message || 'Failed to send');
+                      }
+                    } catch { alert('Failed to send message'); }
+                  }}>Send Message</Button>
+                </div>
               </div>
             </div>
           </div>
