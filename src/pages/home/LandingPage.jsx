@@ -47,7 +47,7 @@ export const LandingPage = () => {
     <div className="min-h-screen">
       <section className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white py-12 sm:py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="w-full max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-display font-bold mb-4 sm:mb-6 leading-tight">
@@ -97,7 +97,7 @@ export const LandingPage = () => {
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-accent-200/15 rounded-full blur-3xl animate-bounce-soft"></div>
         </div>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="w-full max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6 relative z-10">
           <div className="text-center mb-20">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -190,7 +190,7 @@ export const LandingPage = () => {
       </section>
 
       <section className="py-12 sm:py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex justify-between items-center mb-6 sm:mb-10">
             <div>
               <h2 className="text-2xl sm:text-4xl font-display font-bold text-secondary-900">Trending Books</h2>
@@ -218,7 +218,7 @@ export const LandingPage = () => {
       {!user && (
         <section className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-black/5"></div>
-          <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="w-full max-w-screen-xl mx-auto text-center px-3 sm:px-4 lg:px-6 relative z-10">
             <h2 className="text-4xl font-display font-bold mb-6">Ready to Get Started?</h2>
             <p className="text-xl text-primary-100 mb-8">
               Join thousands of students and libraries already using SmartBook Sharing

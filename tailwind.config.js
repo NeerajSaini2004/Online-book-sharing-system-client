@@ -5,6 +5,13 @@ module.exports = {
   ],
   theme: {
     extend: {
+      maxWidth: {
+        '8xl': '88rem',
+        '9xl': '96rem',
+      },
+      screens: {
+        'xs': '475px',
+      },
       colors: {
         primary: {
           50: '#f0f9ff',

@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 export const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="w-full max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8">
           <div>
             <h3 className="text-lg font-semibold mb-4">BookShare</h3>
             <p className="text-gray-400">Share knowledge, build community</p>

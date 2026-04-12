@@ -94,9 +94,10 @@ export const SearchPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Search Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 px-4 py-3">
-        <div className="max-w-7xl mx-auto">
+      <div className="w-full max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6">
+        {/* Search Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 px-3 py-3">
+        <div className="w-full max-w-screen-xl mx-auto">
           <div className="flex gap-2 items-center">
             <div className="relative flex-1">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -135,7 +136,7 @@ export const SearchPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="w-full max-w-screen-xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
         {/* Filter Panel */}
         <AnimatePresence>
           {showFilters && (
