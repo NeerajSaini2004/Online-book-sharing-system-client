@@ -18,7 +18,7 @@ const generalCategories = [
 ];
 
 const conditions = ['Like New', 'Good', 'Fair', 'Poor'];
-const classList = ['9th', '10th', '11th', '12th', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Engineering', 'Graduation', 'Other'];
+const classList = ['9th', '10th', '11th', '12th', 'Engineering', 'Graduation', 'Other'];
 
 export const SellPage = () => {
   const navigate = useNavigate();
@@ -91,6 +91,7 @@ export const SellPage = () => {
       
       if (formData.imageFiles.length > 0) {
         submitData.bookImage = formData.imageFiles[0];
+        submitData.extraImages = formData.imageFiles.slice(1);
       }
       
       await apiService.createListing(submitData);

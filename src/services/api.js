@@ -77,23 +77,20 @@ class ApiService {
 
   async createListing(data) {
     const formData = new FormData();
-    
-    // Add all fields to FormData
     Object.keys(data).forEach(key => {
       if (key === 'bookImage' && data[key]) {
         formData.append('bookImage', data[key]);
+      } else if (key === 'extraImages' && Array.isArray(data[key])) {
+        data[key].forEach(img => formData.append('extraImages', img));
       } else if (key === 'images' && Array.isArray(data[key])) {
         formData.append('images', JSON.stringify(data[key]));
       } else if (data[key] !== null && data[key] !== undefined) {
         formData.append(key, data[key]);
       }
     });
-
     const response = await fetch(`${API_BASE_URL}/listings`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token') || localStorage.getItem('smartbook_token')}`
-      },
+      headers: { Authorization: `Bearer ${localStorage.getItem('token') || localStorage.getItem('smartbook_token')}` },
       body: formData,
     });
     return this.handleResponse(response);
