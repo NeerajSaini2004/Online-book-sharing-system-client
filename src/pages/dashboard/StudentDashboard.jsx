@@ -45,6 +45,11 @@ export const StudentDashboard = () => {
   const [orderFilter, setOrderFilter] = useState('all');
   const [wishlist, setWishlist] = useState([]);
   const [myOrders, setMyOrders] = useState([]);
+  const [mySales, setMySales] = useState([]);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [saleOrderStatus, setSaleOrderStatus] = useState('');
+  const [saleTrackingNumber, setSaleTrackingNumber] = useState('');
+  const [selectedSale, setSelectedSale] = useState(null);
   const [inbox, setInbox] = useState([]);
   const [replyTo, setReplyTo] = useState(null);
   const [replyText, setReplyText] = useState('');
@@ -54,6 +59,7 @@ export const StudentDashboard = () => {
     loadWishlist();
     loadOrders();
     loadInbox();
+    loadMySales();
   }, []);
 
   const loadInbox = async () => {
@@ -78,7 +84,45 @@ export const StudentDashboard = () => {
     } catch {}
   };
 
-  const loadWishlist = async () => {
+  const loadMySales = async () => {
+    try {
+      const response = await apiService.getMySales();
+      if (response.success) {
+        const mapped = response.data.map(o => ({
+          id: o._id,
+          book: o.bookTitle || 'Unknown Book',
+          buyer: o.buyerName || 'Unknown Buyer',
+          amount: o.amount || 0,
+          status: o.deliveryStatus || 'Pending',
+          paymentMethod: o.paymentMethod || 'cod',
+          paymentStatus: o.paymentStatus || 'Pending',
+          address: o.deliveryAddress || '',
+          trackingId: o.trackingId || '',
+          date: new Date(o.createdAt).toLocaleDateString()
+        }));
+        setMySales(mapped);
+      }
+    } catch {}
+  };
+
+  const updateSaleStatus = async (orderId, newStatus, tracking) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`https://online-book-sharing-system-backend.onrender.com/api/orders/update-status/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ deliveryStatus: newStatus, trackingId: tracking })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMySales(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus, trackingId: tracking } : o));
+        setShowUpdateModal(false);
+        alert(`✅ Order updated!\nStatus: ${newStatus}${tracking ? '\nTracking: ' + tracking : ''}`);
+      } else {
+        alert('Failed: ' + data.message);
+      }
+    } catch { alert('Failed to update order'); }
+  };
     try {
       const response = await apiService.getWishlist();
       if (response.success) {
@@ -161,6 +205,7 @@ export const StudentDashboard = () => {
     { id: 'overview', label: 'Overview' },
     { id: 'listings', label: 'My Listings' },
     { id: 'orders', label: 'My Orders' },
+    { id: 'sales', label: `My Sales${mySales.filter(s => s.status === 'Pending').length > 0 ? ` 🔴${mySales.filter(s => s.status === 'Pending').length}` : ''}` },
     { id: 'inbox', label: `Inbox${inbox.filter(m => !m.read).length > 0 ? ` (${inbox.filter(m => !m.read).length})` : ''}` },
     { id: 'wishlist', label: 'Wishlist' }
   ];
@@ -484,6 +529,57 @@ export const StudentDashboard = () => {
                   contact them to make a sale. It's a great way to sell books that are in demand!
                 </p>
               </div>
+            </Card>
+          )}
+
+          {activeTab === 'sales' && (
+            <Card>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-display font-bold text-secondary-900">My Sales</h3>
+                <Button onClick={loadMySales} variant="outline" size="sm">Refresh</Button>
+              </div>
+              {mySales.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-4xl mb-3">📦</p>
+                  <p className="text-gray-500">No sales yet</p>
+                  <p className="text-sm text-gray-400 mt-1">When someone buys your book, it will appear here</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {mySales.map((sale) => (
+                    <div key={sale.id} className={`p-4 border rounded-xl transition-all ${ sale.status === 'Pending' ? 'border-orange-300 bg-orange-50' : 'border-secondary-200'}`}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            {sale.status === 'Pending' && <span className="text-xs bg-orange-500 text-white px-2 py-0.5 rounded-full font-medium">Action Required</span>}
+                            <h4 className="font-semibold text-secondary-900">{sale.book}</h4>
+                          </div>
+                          <p className="text-sm text-secondary-600">Buyer: {sale.buyer}</p>
+                          <p className="text-xs text-secondary-500">{sale.date}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-primary-600">₹{sale.amount}</p>
+                          <Badge variant={sale.status === 'Delivered' ? 'success' : sale.status === 'Shipped' ? 'primary' : 'warning'}>
+                            {sale.status}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                        <span className="bg-gray-100 px-2 py-1 rounded">Payment: {sale.paymentMethod?.toUpperCase()} - {sale.paymentStatus}</span>
+                        {sale.trackingId && <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded">Tracking: {sale.trackingId}</span>}
+                      </div>
+                      {sale.address && <p className="text-xs text-gray-500 mb-3">📍 Deliver to: {sale.address}</p>}
+                      <Button
+                        size="sm"
+                        onClick={() => { setSelectedSale(sale); setSaleOrderStatus(sale.status); setSaleTrackingNumber(sale.trackingId || ''); setShowUpdateModal(true); }}
+                        className={sale.status === 'Pending' ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                      >
+                        {sale.status === 'Pending' ? '📦 Mark as Shipped' : 'Update Status'}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
           )}
 
@@ -817,6 +913,41 @@ export const StudentDashboard = () => {
                 ))}
               </div>
               <Button onClick={() => setShowFilterModal(false)} variant="outline" className="w-full mt-4">Close</Button>
+            </Card>
+          </div>
+        )}
+
+        {/* Update Sale Status Modal */}
+        {showUpdateModal && selectedSale && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <Card className="max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Update Order Status</h3>
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <p className="font-semibold">{selectedSale.book}</p>
+                  <p className="text-sm text-gray-600">Buyer: {selectedSale.buyer}</p>
+                  <p className="text-sm text-gray-600">Amount: ₹{selectedSale.amount}</p>
+                  <p className="text-sm text-gray-600">Payment: {selectedSale.paymentMethod?.toUpperCase()} - {selectedSale.paymentStatus}</p>
+                  {selectedSale.address && <p className="text-sm text-gray-600 mt-1">📍 {selectedSale.address}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Delivery Status</label>
+                  <select value={saleOrderStatus} onChange={(e) => setSaleOrderStatus(e.target.value)} className="w-full p-2 border rounded-lg">
+                    <option value="Pending">Pending</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Out for Delivery">Out for Delivery</option>
+                    <option value="Delivered">Delivered</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Tracking Number (Optional)</label>
+                  <input type="text" value={saleTrackingNumber} onChange={(e) => setSaleTrackingNumber(e.target.value)} placeholder="e.g. TRK123456" className="w-full p-2 border rounded-lg" />
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => setShowUpdateModal(false)} variant="outline" className="flex-1">Cancel</Button>
+                  <Button onClick={() => updateSaleStatus(selectedSale.id, saleOrderStatus, saleTrackingNumber)} className="flex-1">Update Order</Button>
+                </div>
+              </div>
             </Card>
           </div>
         )}
