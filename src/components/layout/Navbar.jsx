@@ -20,12 +20,32 @@ export const Navbar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [newOrderCount, setNewOrderCount] = useState(0);
   
   useEffect(() => {
     loadNotifications();
-    const interval = setInterval(loadNotifications, 5000); // Check every 5 seconds
+    if (user) loadNewOrders();
+    const interval = setInterval(() => {
+      loadNotifications();
+      if (user) loadNewOrders();
+    }, 30000);
     return () => clearInterval(interval);
   }, [user]);
+
+  const loadNewOrders = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const res = await fetch('https://online-book-sharing-system-backend.onrender.com/api/users/inbox', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        const orderMsgs = data.data.filter(m => !m.read && m.message?.includes('📦 New Order'));
+        setNewOrderCount(orderMsgs.length);
+      }
+    } catch {}
+  };
 
   const loadNotifications = () => {
     if (!user) return;
@@ -150,8 +170,8 @@ export const Navbar = () => {
                 <div className="relative">
                   <button onClick={handleNotifications} className="p-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg relative">
                     <BellIcon className="h-5 w-5 sm:h-6 sm:w-6" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                    {(unreadCount + newOrderCount) > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">{(unreadCount + newOrderCount) > 9 ? '9+' : (unreadCount + newOrderCount)}</span>
                     )}
                   </button>
                   {showNotifications && (
@@ -161,7 +181,13 @@ export const Navbar = () => {
                         {unreadCount > 0 && <button onClick={markAllAsRead} className="text-xs text-primary-600">Mark all read</button>}
                       </div>
                       <div className="max-h-72 overflow-y-auto">
-                        {notifications.length === 0 ? (
+                        {newOrderCount > 0 && (
+                          <div className="p-3 border-b bg-orange-50 border-l-4 border-l-orange-500 cursor-pointer" onClick={() => { setShowNotifications(false); window.location.href = user?.role === 'library' ? '/library/dashboard' : '/student/dashboard'; }}>
+                            <p className="text-sm font-semibold text-orange-800">📦 {newOrderCount} New Order{newOrderCount > 1 ? 's' : ''}!</p>
+                            <p className="text-xs text-orange-600">Click to view in Dashboard → Orders tab</p>
+                          </div>
+                        )}
+                        {notifications.length === 0 && newOrderCount === 0 ? (
                           <div className="p-6 text-center text-gray-500 text-sm">No notifications yet</div>
                         ) : (
                           notifications.map((notif) => (

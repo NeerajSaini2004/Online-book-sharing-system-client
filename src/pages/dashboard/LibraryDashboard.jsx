@@ -46,10 +46,34 @@ export const LibraryDashboard = () => {
   ]);
   const [analytics, setAnalytics] = useState({ monthSales: 0, totalSold: 0, avgOrder: 0, categories: [] });
   const [loading, setLoading] = useState(true);
+  const [inbox, setInbox] = useState([]);
 
   useEffect(() => {
     loadDashboardData();
+    loadInbox();
   }, []);
+
+  const loadInbox = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const res = await fetch('https://online-book-sharing-system-backend.onrender.com/api/users/inbox', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) setInbox(data.data);
+    } catch {}
+  };
+
+  const markInboxRead = async (msgId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`https://online-book-sharing-system-backend.onrender.com/api/users/inbox/${msgId}/read`, {
+        method: 'PUT', headers: { Authorization: `Bearer ${token}` }
+      });
+      setInbox(prev => prev.map(m => m._id === msgId ? { ...m, read: true } : m));
+    } catch {}
+  };
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -231,8 +255,8 @@ Orders This Month: ${stats[3]?.value || 0}
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'inventory', label: 'Inventory' },
-    { id: 'orders', label: 'Orders' },
-    { id: 'requests', label: 'Book Requests' },
+    { id: 'orders', label: `Orders${recentOrders.filter(o => o.status === 'Pending').length > 0 ? ` (${recentOrders.filter(o => o.status === 'Pending').length})` : ''}` },
+    { id: 'inbox', label: 'Inbox' },
     { id: 'analytics', label: 'Analytics' }
   ];
 
@@ -474,6 +498,47 @@ Orders This Month: ${stats[3]?.value || 0}
                   </div>
                 ))}
               </div>
+            </Card>
+          )}
+
+          {activeTab === 'inbox' && (
+            <Card>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-display font-bold text-secondary-900">Inbox</h3>
+                <p className="text-sm text-gray-500">{inbox.filter(m => !m.read).length} unread</p>
+              </div>
+              {inbox.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-4xl mb-3">📬</p>
+                  <p className="text-gray-500">No messages yet</p>
+                  <p className="text-sm text-gray-400 mt-1">Order notifications and buyer messages appear here</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {inbox.map((msg) => (
+                    <div key={msg._id} onClick={() => markInboxRead(msg._id)}
+                      className={`p-4 rounded-xl border cursor-pointer transition-colors ${ !msg.read ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${ msg.message?.includes('📦') ? 'bg-orange-100 text-orange-600' : 'bg-primary-100 text-primary-600'}`}>
+                            {msg.message?.includes('📦') ? '📦' : msg.fromName?.charAt(0).toUpperCase() || '?'}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm">{msg.fromName || 'Buyer'}</p>
+                            <p className="text-xs text-gray-500">{new Date(msg.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        {!msg.read && <span className="w-2 h-2 bg-orange-500 rounded-full mt-1"></span>}
+                      </div>
+                      {msg.bookTitle && <p className="text-xs text-primary-600 mb-1">📚 {msg.bookTitle}</p>}
+                      <p className="text-sm text-gray-700">{msg.message}</p>
+                      {msg.message?.includes('📦') && (
+                        <button onClick={(e) => { e.stopPropagation(); setActiveTab('orders'); }} className="mt-2 text-xs text-orange-600 font-medium hover:underline">View in Orders tab →</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
           )}
 
