@@ -6,8 +6,10 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
 import { authService } from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 
 export const SignupPage = () => {
+  const { updateUser } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,6 +34,12 @@ export const SignupPage = () => {
       return;
     }
 
+    if (formData.phone.replace(/\D/g, '').length !== 10) {
+      setError('Phone number must be exactly 10 digits');
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await authService.register({
         name: formData.name,
@@ -42,6 +50,12 @@ export const SignupPage = () => {
       });
       
       if (response.success) {
+        // Save user to localStorage so profile shows data
+        const userData = response.data?.user || { name: formData.name, email: formData.email, phone: formData.phone, role: 'student' };
+        const token = response.data?.token || '';
+        localStorage.setItem('smartbook_user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        updateUser(userData);
         navigate('/role-selection');
       } else {
         setError(response.message || 'Registration failed');
@@ -103,10 +117,14 @@ export const SignupPage = () => {
             <Input
               name="phone"
               type="tel"
-              placeholder="Phone Number"
+              placeholder="10 digit phone number"
               icon={<PhoneIcon />}
               value={formData.phone}
-              onChange={handleInputChange}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                setFormData({ ...formData, phone: val });
+              }}
+              maxLength={10}
               required
             />
             
