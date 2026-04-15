@@ -5,12 +5,17 @@ import { DocumentArrowUpIcon, CheckCircleIcon } from '@heroicons/react/24/outlin
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { FileUploader } from '../../components/ui/FileUploader';
+import { useAuth } from '../../context/AuthContext';
+
+const API = 'https://online-book-sharing-system-backend.onrender.com/api';
 
 export const KYCUploadPage = () => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [kycType, setKycType] = useState('library');
+  const [kycType, setKycType] = useState('student');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
 
   const handleFileUpload = (files) => {
     setUploadedFiles(files);
@@ -18,18 +23,38 @@ export const KYCUploadPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (uploadedFiles.length === 0) {
+      setError('Please upload at least one document');
+      return;
+    }
     setLoading(true);
-    
+    setError('');
+
     try {
-      // Simulate KYC submission
-      console.log('KYC submitted:', { kycType, files: uploadedFiles });
-      
-      // After successful submission, redirect to dashboard
-      setTimeout(() => {
-        navigate('/library/dashboard');
-      }, 1000);
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('documentType', kycType);
+      uploadedFiles.forEach(file => formData.append('documents', file));
+
+      const response = await fetch(`${API}/users/kyc/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update user kycStatus in context
+        updateUser({ kycStatus: 'pending' });
+        alert('✅ KYC documents submitted successfully!\n\nYour documents will be reviewed within 24-48 hours.');
+        const role = user?.role;
+        navigate(role === 'library' ? '/library/dashboard' : '/student/dashboard');
+      } else {
+        setError(data.message || 'KYC submission failed');
+      }
     } catch (error) {
-      console.error('KYC submission failed:', error);
+      setError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -54,6 +79,11 @@ export const KYCUploadPage = () => {
 
         <Card className="shadow-2xl border-0">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                {error}
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Select your role
