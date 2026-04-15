@@ -11,7 +11,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
-import { categories, conditions, classes, engineeringBranches } from '../../data/books';
+import { categories, conditions, classes, engineeringBranches, engineeringCategories } from '../../data/books';
 import { apiService } from '../../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -162,7 +162,7 @@ export const SearchPage = () => {
                       <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
                       <select value={filters.class} onChange={(e) => setFilters({...filters, class: e.target.value})} className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm">
                         <option value="All Classes">All Branches</option>
-                        {engineeringBranches.map(b => <option key={b} value={b}>{b}</option>)}
+                        {engineeringCategories.map(b => <option key={b} value={b}>{b}</option>)}
                       </select>
                     </div>
                   )}

@@ -234,9 +234,21 @@ export const categories = [
   'Geography',
   'Economics',
   'Commerce',
-  'Engineering',
   'Medical',
   'Other'
+];
+
+export const engineeringCategories = [
+  'Computer Science Engineering',
+  'Mechanical Engineering',
+  'Civil Engineering',
+  'Electrical Engineering',
+  'Electronics & Communication',
+  'Chemical Engineering',
+  'Aerospace Engineering',
+  'Information Technology',
+  'Data Science',
+  'Biotechnology'
 ];
 
 export const engineeringBranches = [
@@ -262,12 +274,10 @@ export const classes = [
   '10th',
   '11th',
   '12th',
-  'Engineering 1st Year',
-  'Engineering 2nd Year',
-  'Engineering 3rd Year',
-  'Engineering 4th Year',
+  'Engineering',
   'Graduation',
-  'Post Graduation'
+  'Post Graduation',
+  'Other'
 ];
 
 export const locations = [

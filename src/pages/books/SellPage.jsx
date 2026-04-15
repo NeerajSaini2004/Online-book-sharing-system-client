@@ -6,19 +6,11 @@ import { Card } from '../../components/ui/Card';
 import { apiService } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
-const engineeringCategories = [
-  'Computer Science Engineering', 'Mechanical Engineering', 'Civil Engineering',
-  'Electrical Engineering', 'Electronics & Communication', 'Chemical Engineering',
-  'Aerospace Engineering', 'Biotechnology', 'Information Technology', 'Data Science'
-];
+import { engineeringCategories, categories, conditions, classes } from '../../data/books';
 
-const generalCategories = [
-  'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science',
-  'English', 'History', 'Geography', 'Economics', 'Commerce', 'Medical', 'Other'
-];
-
-const conditions = ['Like New', 'Good', 'Fair', 'Poor'];
-const classList = ['9th', '10th', '11th', '12th', 'Engineering', 'Graduation', 'Other'];
+const generalCategories = categories.filter(c => c !== 'All Categories');
+const classList = classes.filter(c => c !== 'All Classes');
+const conditionList = conditions.filter(c => c !== 'All Conditions');
 
 export const SellPage = () => {
   const navigate = useNavigate();
@@ -196,7 +188,7 @@ export const SellPage = () => {
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       required
                     >
-                      {conditions.map(c => <option key={c} value={c}>{c}</option>)}
+                      {conditionList.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                 </div>
