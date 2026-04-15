@@ -1,23 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { EnvelopeIcon, PhoneIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { GoogleLogin } from '@react-oauth/google';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
 import { useAuth } from '../../context/AuthContext';
 
 export const LoginPage = () => {
   const { login, googleLogin } = useAuth();
-  const [loginMethod, setLoginMethod] = useState('email');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
-
 
   const handleGoogleSuccess = async (credentialResponse) => {
     setLoading(true);
@@ -25,7 +21,8 @@ export const LoginPage = () => {
     try {
       const result = await googleLogin(credentialResponse.credential);
       if (result.success) {
-        navigate('/');
+        const role = result.user?.role;
+        navigate(role === 'library' ? '/library/dashboard' : '/student/dashboard');
       } else {
         setError(result.error || 'Google login failed');
       }
@@ -40,106 +37,64 @@ export const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
       const response = await login(formData.email, formData.password);
-      
       if (response.success) {
-        // Redirect to landing page after login
-        navigate('/');
+        const role = response.user?.role;
+        navigate(role === 'library' ? '/library/dashboard' : '/student/dashboard');
       } else {
-        setError(response.error || 'Login failed');
+        setError(response.error || 'Invalid email or password');
       }
-    } catch (err) {
+    } catch {
       setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-100 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <Card className="space-y-6">
           <div className="text-center">
             <div className="w-16 h-16 bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-xl">BS</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
-            <p className="text-gray-600 mt-2">Sign in to your SmartBook account</p>
+            <p className="text-gray-600 mt-2">Sign in to your BookShare account</p>
           </div>
-
-          <div className="flex bg-gray-100 rounded-xl p-1">
-            <button
-              onClick={() => setLoginMethod('email')}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                loginMethod === 'email'
-                  ? 'bg-white text-primary-600 shadow-sm'
-                  : 'text-gray-600'
-              }`}
-            >
-              <EnvelopeIcon className="h-4 w-4 inline mr-2" />
-              Email
-            </button>
-            <button
-              onClick={() => setLoginMethod('phone')}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
-                loginMethod === 'phone'
-                  ? 'bg-white text-primary-600 shadow-sm'
-                  : 'text-gray-600'
-              }`}
-            >
-              <PhoneIcon className="h-4 w-4 inline mr-2" />
-              Phone
-            </button>
-          </div>
-
-
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
               {error}
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
-            <Input
-              name="email"
-              type={loginMethod === 'email' ? 'email' : 'tel'}
-              placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter your phone number'}
-              icon={loginMethod === 'email' ? <EnvelopeIcon /> : <PhoneIcon />}
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-            />
-            
             <div className="relative">
-              <Input
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleInputChange}
+              <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 required
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? (
-                  <EyeSlashIcon className="h-5 w-5" />
-                ) : (
-                  <EyeIcon className="h-5 w-5" />
-                )}
+            </div>
+
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password (min 8 characters)"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                required
+                minLength={8}
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
               </button>
             </div>
 
@@ -148,7 +103,7 @@ export const LoginPage = () => {
                 <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
-              <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
+              <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
                 Forgot password?
               </Link>
             </div>
@@ -178,7 +133,7 @@ export const LoginPage = () => {
             />
           </div>
 
-<p className="text-center text-sm text-gray-600">
+          <p className="text-center text-sm text-gray-600">
             Don't have an account?{' '}
             <Link to="/signup" className="text-primary-600 hover:text-primary-700 font-medium">
               Sign up
