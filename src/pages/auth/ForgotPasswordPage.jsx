@@ -33,6 +33,10 @@ export const ForgotPasswordPage = () => {
       const data = await res.json();
       if (data.success) {
         setStep(2);
+        if (data.devOtp) {
+          setOtp(data.devOtp);
+          alert(`Dev Mode: Your OTP is ${data.devOtp}`);
+        }
       } else {
         setError(data.message || 'Email not found');
       }

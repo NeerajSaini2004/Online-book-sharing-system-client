@@ -54,6 +54,10 @@ export const SignupPage = () => {
       const data = await res.json();
       if (data.success) {
         setTempToken(data.tempToken);
+        if (data.devOtp) {
+          setOtp(data.devOtp);
+          alert(`Dev Mode: Your OTP is ${data.devOtp}`);
+        }
         setStep(2);
       } else {
         setError(data.message || 'Failed to send OTP');
