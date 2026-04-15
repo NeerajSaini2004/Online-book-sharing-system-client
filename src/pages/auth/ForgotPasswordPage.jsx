@@ -16,6 +16,8 @@ export const ForgotPasswordPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    if (loading) return;
     setLoading(true);
     setError('');
     try {
