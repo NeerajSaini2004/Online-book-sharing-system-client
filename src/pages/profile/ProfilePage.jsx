@@ -350,7 +350,8 @@ export const ProfilePage = () => {
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="max-w-md w-full p-6">
-            <h3 className="text-xl font-bold mb-4">Change Password</h3>
+            <h3 className="text-xl font-bold mb-1">Change Password</h3>
+            <p className="text-sm text-gray-500 mb-4">Enter your current password and set a new one</p>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Current Password</label>
@@ -358,7 +359,8 @@ export const ProfilePage = () => {
                   type="password"
                   value={passwordData.currentPassword}
                   onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                  placeholder="Enter current password"
                   required
                 />
               </div>
@@ -368,9 +370,14 @@ export const ProfilePage = () => {
                   type="password"
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                  placeholder="Min 8 characters"
+                  minLength={8}
                   required
                 />
+                {passwordData.newPassword.length > 0 && passwordData.newPassword.length < 8 && (
+                  <p className="text-xs text-red-500 mt-1">Password must be at least 8 characters</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Confirm New Password</label>
@@ -378,13 +385,17 @@ export const ProfilePage = () => {
                   type="password"
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                  className="w-full p-2 border rounded-lg"
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                  placeholder="Confirm new password"
                   required
                 />
+                {passwordData.confirmPassword.length > 0 && passwordData.newPassword !== passwordData.confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+                )}
               </div>
               <div className="flex space-x-2 pt-2">
                 <Button onClick={handlePasswordChange} className="flex-1">Change Password</Button>
-                <Button onClick={() => setShowPasswordModal(false)} variant="outline" className="flex-1">Cancel</Button>
+                <Button onClick={() => { setShowPasswordModal(false); setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' }); }} variant="outline" className="flex-1">Cancel</Button>
               </div>
             </div>
           </Card>
