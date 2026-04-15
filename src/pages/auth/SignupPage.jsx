@@ -11,10 +11,13 @@ const API = 'https://online-book-sharing-system-backend.onrender.com/api';
 export const SignupPage = () => {
   const { updateUser } = useAuth();
   const navigate = useNavigate();
+  const [step, setStep] = useState(1); // 1: Form, 2: OTP
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [otp, setOtp] = useState('');
+  const [tempToken, setTempToken] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -23,7 +26,8 @@ export const SignupPage = () => {
     confirmPassword: ''
   });
 
-  const handleSignup = async (e) => {
+  // Step 1: Validate form and send OTP
+  const handleSendOTP = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -42,31 +46,85 @@ export const SignupPage = () => {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API}/auth/register`, {
+      const res = await fetch(`${API}/auth/send-verification-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTempToken(data.tempToken);
+        setStep(2);
+      } else {
+        setError(data.message || 'Failed to send OTP');
+      }
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: Verify OTP and register
+  const handleVerifyAndRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    if (otp.length !== 6) {
+      setError('Please enter 6-digit OTP');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/auth/verify-and-register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          tempToken,
+          otp,
           name: formData.name,
-          email: formData.email,
           phone: formData.phone,
           password: formData.password,
           role: 'student'
         })
       });
       const data = await res.json();
-
       if (data.success) {
-        const userData = data.data?.user || { name: formData.name, email: formData.email, phone: formData.phone, role: 'student' };
-        const token = data.data?.token || '';
+        const userData = data.data.user;
+        const token = data.data.token;
         localStorage.setItem('smartbook_user', JSON.stringify(userData));
         localStorage.setItem('token', token);
         updateUser(userData);
         navigate('/role-selection');
       } else {
-        setError(data.message || 'Registration failed');
+        setError(data.message || 'Invalid OTP');
       }
     } catch {
       setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/auth/send-verification-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTempToken(data.tempToken);
+        setOtp('');
+        alert('New OTP sent!');
+      } else {
+        setError(data.message);
+      }
+    } catch {
+      setError('Network error.');
     } finally {
       setLoading(false);
     }
@@ -80,8 +138,25 @@ export const SignupPage = () => {
             <div className="w-16 h-16 bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-xl">BS</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
-            <p className="text-gray-600 mt-2">Join BookShare community today</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {step === 1 ? 'Create Account' : 'Verify Email'}
+            </h1>
+            <p className="text-gray-600 mt-2 text-sm">
+              {step === 1 ? 'Join BookShare community today' : `OTP sent to ${formData.email}`}
+            </p>
+          </div>
+
+          {/* Step indicator */}
+          <div className="flex items-center justify-center space-x-2">
+            {[1, 2].map(s => (
+              <div key={s} className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                s < step ? 'bg-green-500 text-white' :
+                s === step ? 'bg-primary-600 text-white' :
+                'bg-gray-200 text-gray-500'
+              }`}>
+                {s < step ? '✓' : s}
+              </div>
+            ))}
           </div>
 
           {error && (
@@ -90,96 +165,96 @@ export const SignupPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSignup} className="space-y-4">
-            <div className="relative">
-              <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          {step === 1 ? (
+            <form onSubmit={handleSendOTP} className="space-y-4">
+              <div className="relative">
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input type="text" placeholder="Full Name" value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500" required />
+              </div>
+
+              <div className="relative">
+                <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input type="email" placeholder="Email Address" value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500" required />
+              </div>
+
+              <div className="relative">
+                <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input type="tel" placeholder="10 digit phone number" value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500" required />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">{formData.phone.length}/10</span>
+              </div>
+
+              <div className="relative">
+                <input type={showPassword ? 'text' : 'password'} placeholder="Password (min 8 characters)" value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500" required minLength={8} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                </button>
+              </div>
+
+              <div className="relative">
+                <input type={showConfirmPassword ? 'text' : 'password'} placeholder="Confirm Password" value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500" required />
+                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  {showConfirmPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                </button>
+              </div>
+
+              <div className="flex items-start">
+                <input type="checkbox" className="mt-1 rounded border-gray-300 text-primary-600" required />
+                <span className="ml-2 text-sm text-gray-600">
+                  I agree to the{' '}
+                  <Link to="/terms" className="text-primary-600">Terms of Service</Link>
+                  {' '}and{' '}
+                  <Link to="/privacy" className="text-primary-600">Privacy Policy</Link>
+                </span>
+              </div>
+
+              <Button type="submit" className="w-full" loading={loading}>
+                Send Verification OTP
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyAndRegister} className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+                📧 Check your email <strong>{formData.email}</strong> for the 6-digit OTP
+              </div>
+
               <input
                 type="text"
-                placeholder="Full Name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                required
+                placeholder="Enter 6-digit OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 text-center text-2xl font-bold tracking-widest"
+                maxLength={6}
               />
-            </div>
+              <p className="text-xs text-gray-500 text-center">{otp.length}/6 digits • Valid for 10 minutes</p>
 
-            <div className="relative">
-              <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="email"
-                placeholder="Email Address"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                required
-              />
-            </div>
+              <Button type="submit" className="w-full" loading={loading} disabled={otp.length !== 6}>
+                Verify & Create Account
+              </Button>
 
-            <div className="relative">
-              <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="tel"
-                placeholder="10 digit phone number"
-                value={formData.phone}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                  setFormData({ ...formData, phone: val });
-                }}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                required
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                {formData.phone.length}/10
-              </span>
-            </div>
-
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Password (min 8 characters)"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                required
-                minLength={8}
-              />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-              </button>
-            </div>
-
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                required
-              />
-              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                {showConfirmPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-              </button>
-            </div>
-
-            <div className="flex items-start">
-              <input type="checkbox" className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500" required />
-              <span className="ml-2 text-sm text-gray-600">
-                I agree to the{' '}
-                <Link to="/terms" className="text-primary-600 hover:text-primary-700">Terms of Service</Link>
-                {' '}and{' '}
-                <Link to="/privacy" className="text-primary-600 hover:text-primary-700">Privacy Policy</Link>
-              </span>
-            </div>
-
-            <Button type="submit" className="w-full" loading={loading}>
-              Create Account
-            </Button>
-          </form>
+              <div className="flex items-center justify-between text-sm">
+                <button type="button" onClick={() => { setStep(1); setOtp(''); setError(''); }} className="text-gray-500 hover:text-gray-700">
+                  ← Change Email
+                </button>
+                <button type="button" onClick={handleResendOTP} className="text-primary-600 hover:text-primary-700">
+                  Resend OTP
+                </button>
+              </div>
+            </form>
+          )}
 
           <p className="text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">Sign in</Link>
+            <Link to="/login" className="text-primary-600 font-medium">Sign in</Link>
           </p>
         </Card>
       </motion.div>
