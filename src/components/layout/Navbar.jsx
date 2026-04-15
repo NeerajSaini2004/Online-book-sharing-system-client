@@ -129,7 +129,9 @@ export const Navbar = () => {
           { name: 'Blog', href: '/blog' }
         ]
       : [
-          { name: 'Dashboard', href: '/library/dashboard' }
+          { name: 'Dashboard', href: '/library/dashboard' },
+          { name: 'Browse', href: '/browse' },
+          { name: 'Blog', href: '/blog' }
         ]
   ) : [
       { name: 'Browse', href: '/browse' },

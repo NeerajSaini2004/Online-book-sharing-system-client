@@ -75,7 +75,8 @@ export const ProfilePage = () => {
 
       const data = await response.json();
       if (data.success) {
-        updateUser({ ...data.data.user, college: updateData.college });
+        const updatedUser = { ...user, ...updateData, ...data.data.user };
+        updateUser(updatedUser);
         setIsEditing(false);
         alert('Profile updated successfully!');
       } else {

@@ -195,22 +195,17 @@ export const SellPage = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select category</option>
                     {getCategories().map(cat => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, category: cat })}
-                        className={`px-3 py-2 rounded-lg text-sm border transition-all ${
-                          formData.category === cat
-                            ? 'bg-primary-600 text-white border-primary-600 font-medium'
-                            : 'bg-white text-gray-600 border-gray-300 hover:border-primary-400 hover:text-primary-600'
-                        }`}
-                      >
-                        {cat}
-                      </button>
+                      <option key={cat} value={cat}>{cat}</option>
                     ))}
-                  </div>
+                  </select>
                   {!formData.category && <p className="text-xs text-red-500 mt-1">Please select a category</p>}
                 </div>
 
