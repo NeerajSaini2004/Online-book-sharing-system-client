@@ -11,11 +11,13 @@ const API = 'https://online-book-sharing-system-backend.onrender.com/api';
 
 export const KYCUploadPage = () => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [kycType, setKycType] = useState('student');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
+  
+  // Auto set kycType based on user role
+  const kycType = user?.role === 'library' ? 'library' : 'student';
 
   const handleFileUpload = (files) => {
     setUploadedFiles(files);
@@ -84,38 +86,11 @@ export const KYCUploadPage = () => {
                 {error}
               </div>
             )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Select your role
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => setKycType('student')}
-                  className={`p-6 border-2 rounded-2xl text-center transition-all transform hover:scale-105 ${
-                    kycType === 'student'
-                      ? 'border-primary-500 bg-gradient-to-br from-primary-50 to-purple-50 text-primary-700 shadow-lg'
-                      : 'border-gray-200 hover:border-primary-300 hover:shadow-md'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">🎓</div>
-                  <div className="font-semibold text-lg">Student</div>
-                  <div className="text-sm text-gray-500 mt-1">College ID required</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setKycType('library')}
-                  className={`p-6 border-2 rounded-2xl text-center transition-all transform hover:scale-105 ${
-                    kycType === 'library'
-                      ? 'border-primary-500 bg-gradient-to-br from-primary-50 to-purple-50 text-primary-700 shadow-lg'
-                      : 'border-gray-200 hover:border-primary-300 hover:shadow-md'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">📚</div>
-                  <div className="font-semibold text-lg">Library</div>
-                  <div className="text-sm text-gray-500 mt-1">GST/Registration required</div>
-                </button>
-              </div>
+
+            <div className="bg-primary-50 border border-primary-200 rounded-xl p-4">
+              <p className="text-sm font-medium text-primary-800">
+                {kycType === 'library' ? '📚 Library Verification - Upload GST certificate, library registration, and official ID proof' : '🎓 Student Verification - Upload your college ID card and any additional verification documents'}
+              </p>
             </div>
 
             <div>
@@ -130,8 +105,8 @@ export const KYCUploadPage = () => {
               />
               <div className="mt-2 text-sm text-gray-500">
                 {kycType === 'student' 
-                  ? 'Upload your college ID card and any additional verification documents'
-                  : 'Upload GST certificate, library registration, and official ID proof'
+                  ? 'Accepted: College ID, Aadhar Card, Student Certificate'
+                  : 'Accepted: GST Certificate, Library Registration, Official ID'
                 }
               </div>
             </div>
