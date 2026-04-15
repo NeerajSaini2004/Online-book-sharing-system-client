@@ -61,7 +61,7 @@ export const LoginPage = () => {
               <span className="text-white font-bold text-xl">BS</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
-            <p className="text-gray-600 mt-2">Sign in to your BookShare account</p>
+            <p className="text-gray-600 mt-2">Sign in to your BookShare account 🔐</p>
           </div>
 
           {error && (
