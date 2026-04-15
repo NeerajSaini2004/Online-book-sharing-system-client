@@ -75,7 +75,15 @@ export const ProfilePage = () => {
 
       const data = await response.json();
       if (data.success) {
-        const updatedUser = { ...user, ...updateData, ...data.data.user };
+        // Keep existing role - never override from profile update
+        const updatedUser = { 
+          ...user, 
+          name: updateData.name,
+          phone: updateData.phone,
+          college: updateData.college,
+          libraryName: updateData.libraryName,
+          location: updateData.location
+        };
         updateUser(updatedUser);
         setIsEditing(false);
         alert('Profile updated successfully!');
