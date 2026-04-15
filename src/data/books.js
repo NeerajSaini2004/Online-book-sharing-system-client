@@ -235,6 +235,16 @@ export const categories = [
   'Economics',
   'Commerce',
   'Medical',
+  'Computer Science Engineering',
+  'Mechanical Engineering',
+  'Civil Engineering',
+  'Electrical Engineering',
+  'Electronics & Communication',
+  'Chemical Engineering',
+  'Aerospace Engineering',
+  'Information Technology',
+  'Data Science',
+  'Biotechnology',
   'Other'
 ];
 
