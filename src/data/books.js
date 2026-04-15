@@ -239,6 +239,16 @@ export const categories = [
   'Other'
 ];
 
+export const engineeringBranches = [
+  'Computer Engineering',
+  'Mechanical Engineering',
+  'Civil Engineering',
+  'Electrical Engineering',
+  'Electronics Engineering',
+  'Chemical Engineering',
+  'IT Engineering'
+];
+
 export const conditions = [
   'All Conditions',
   'Like New',
@@ -252,6 +262,10 @@ export const classes = [
   '10th',
   '11th',
   '12th',
+  'Engineering 1st Year',
+  'Engineering 2nd Year',
+  'Engineering 3rd Year',
+  'Engineering 4th Year',
   'Graduation',
   'Post Graduation'
 ];

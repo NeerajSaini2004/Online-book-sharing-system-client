@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   MagnifyingGlassIcon, 
   DocumentTextIcon,
@@ -15,7 +15,9 @@ import { apiService } from '../../services/api';
 
 export const NotesPage = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
+  const location = useLocation();
+  const urlSearch = new URLSearchParams(location.search).get('search') || '';
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [notesData, setNotesData] = useState([]);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -134,7 +136,7 @@ export const NotesPage = () => {
     razorpay.open();
   };
 
-  const categories = ['All', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'English'];
+  const categories = ['All', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science', 'Engineering', 'Medical', 'Commerce', 'History', 'Geography'];
 
   const filteredNotes = notesData.filter(note => {
     const matchesSearch = searchQuery === '' || 

@@ -11,7 +11,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
-import { categories, conditions, classes } from '../../data/books';
+import { categories, conditions, classes, engineeringBranches } from '../../data/books';
 import { apiService } from '../../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -44,6 +44,11 @@ export const SearchPage = () => {
   });
 
   useEffect(() => { fetchListings(); }, []);
+
+  // Update search when URL changes
+  useEffect(() => {
+    if (urlSearch) setSearchQuery(urlSearch);
+  }, [urlSearch]);
 
   const fetchListings = async () => {
     try {
@@ -152,6 +157,15 @@ export const SearchPage = () => {
                       {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
                   </div>
+                  {filters.category === 'Engineering' && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
+                      <select value={filters.class} onChange={(e) => setFilters({...filters, class: e.target.value})} className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm">
+                        <option value="All Classes">All Branches</option>
+                        {engineeringBranches.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Condition</label>
                     <select value={filters.condition} onChange={(e) => setFilters({...filters, condition: e.target.value})} className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm">
