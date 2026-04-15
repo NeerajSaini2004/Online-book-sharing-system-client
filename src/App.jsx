@@ -8,6 +8,7 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { SignupPage } from './pages/auth/SignupPage';
 import { RoleSelectionPage } from './pages/auth/RoleSelectionPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { SearchPage } from './pages/books/SearchPage';
 import { SellPage } from './pages/books/SellPage';
 import { NotesPage } from './pages/notes/NotesPage';
@@ -45,6 +46,7 @@ function AppContent() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route path="/role-selection" element={<RoleSelectionPage />} />
             <Route path="/browse" element={<SearchPage />} />
             <Route path="/sell" element={<SellPage />} />

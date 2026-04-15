@@ -6,28 +6,40 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
 
+const API = 'https://online-book-sharing-system-backend.onrender.com/api';
+
 export const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
-    setTimeout(() => {
+    setError('');
+    try {
+      const res = await fetch(`${API}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSent(true);
+      } else {
+        setError(data.message || 'Something went wrong');
+      }
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
       setLoading(false);
-      setSent(true);
-    }, 2000);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-100 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <Card className="space-y-6">
           <div className="text-center">
             <div className="w-16 h-16 bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -37,12 +49,15 @@ export const ForgotPasswordPage = () => {
               {sent ? 'Check Your Email' : 'Forgot Password?'}
             </h1>
             <p className="text-gray-600 mt-2">
-              {sent 
-                ? 'We sent a password reset link to your email'
-                : 'Enter your email to reset your password'
-              }
+              {sent ? `Reset link sent to ${email}` : 'Enter your email to reset your password'}
             </p>
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+              {error}
+            </div>
+          )}
 
           {!sent ? (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -54,7 +69,6 @@ export const ForgotPasswordPage = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-
               <Button type="submit" className="w-full" loading={loading}>
                 Send Reset Link
               </Button>
@@ -67,21 +81,15 @@ export const ForgotPasswordPage = () => {
                 </svg>
               </div>
               <p className="text-sm text-gray-600">
-                Didn't receive the email? Check your spam folder or{' '}
-                <button 
-                  onClick={() => setSent(false)}
-                  className="text-primary-600 hover:text-primary-700 font-medium"
-                >
-                  try again
+                Link expires in 15 minutes. Didn't receive?{' '}
+                <button onClick={() => setSent(false)} className="text-primary-600 font-medium">
+                  Try again
                 </button>
               </p>
             </div>
           )}
 
-          <Link 
-            to="/login" 
-            className="flex items-center justify-center text-sm text-primary-600 hover:text-primary-700 font-medium"
-          >
+          <Link to="/login" className="flex items-center justify-center text-sm text-primary-600 hover:text-primary-700 font-medium">
             <ArrowLeftIcon className="h-4 w-4 mr-2" />
             Back to Login
           </Link>
