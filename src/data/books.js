@@ -224,24 +224,23 @@ export const booksData = [
 
 export const categories = [
   'All Categories',
-  'Computer Science',
+  'Mathematics',
   'Physics',
   'Chemistry',
-  'Mathematics',
-  'Database',
   'Biology',
+  'Computer Science',
   'English',
   'History',
   'Geography',
-  'Political Science',
   'Economics',
   'Commerce',
-  'Electronics'
+  'Engineering',
+  'Medical',
+  'Other'
 ];
 
 export const conditions = [
   'All Conditions',
-  'Excellent',
   'Like New',
   'Good',
   'Fair'
@@ -253,25 +252,8 @@ export const classes = [
   '10th',
   '11th',
   '12th',
-  '1st Year',
-  '2nd Year',
-  '3rd Year',
-  '4th Year',
-  'JEE',
-  'NEET',
-  'Graduation'
-];
-
-export const boards = [
-  'All Boards',
-  'CBSE',
-  'ICSE',
-  'State Board',
-  'JEE Main',
-  'NEET',
-  'BTech',
-  'MBBS',
-  'Other'
+  'Graduation',
+  'Post Graduation'
 ];
 
 export const locations = [

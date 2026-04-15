@@ -11,9 +11,9 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
-import { categories, conditions, classes, boards, locations } from '../../data/books';
+import { categories, conditions, classes } from '../../data/books';
 import { apiService } from '../../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const API_BASE = 'https://online-book-sharing-system-backend.onrender.com';
 const FALLBACK_IMG = 'https://placehold.co/300x400/e2e8f0/64748b?text=No+Image';
@@ -28,9 +28,12 @@ const getImageUrl = (images) => {
 
 export const SearchPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const urlSearch = params.get('search') || '';
   const [viewMode, setViewMode] = useState('grid');
   const [showFilters, setShowFilters] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [sortBy, setSortBy] = useState('newest');
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +41,6 @@ export const SearchPage = () => {
     category: 'All Categories',
     condition: 'All Conditions',
     class: 'All Classes',
-    board: 'All Boards',
   });
 
   useEffect(() => { fetchListings(); }, []);
@@ -70,10 +72,7 @@ export const SearchPage = () => {
     const matchesClass = filters.class === 'All Classes' ||
       book.class === filters.class;
 
-    const matchesBoard = filters.board === 'All Boards' ||
-      book.board === filters.board;
-
-    return matchesSearch && matchesCategory && matchesCondition && matchesClass && matchesBoard;
+    return matchesSearch && matchesCategory && matchesCondition && matchesClass;
   }).sort((a, b) => {
     switch (sortBy) {
       case 'price-low': return a.price - b.price;
@@ -86,7 +85,7 @@ export const SearchPage = () => {
   });
 
   const clearFilters = () => {
-    setFilters({ category: 'All Categories', condition: 'All Conditions', class: 'All Classes', board: 'All Boards' });
+    setFilters({ category: 'All Categories', condition: 'All Conditions', class: 'All Classes' });
     setSearchQuery('');
   };
 
@@ -146,7 +145,7 @@ export const SearchPage = () => {
               className="overflow-hidden mb-4"
             >
               <Card className="p-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
                     <select value={filters.category} onChange={(e) => setFilters({...filters, category: e.target.value})} className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm">
@@ -163,12 +162,6 @@ export const SearchPage = () => {
                     <label className="block text-xs font-medium text-gray-600 mb-1">Class</label>
                     <select value={filters.class} onChange={(e) => setFilters({...filters, class: e.target.value})} className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm">
                       {classes.map(cls => <option key={cls} value={cls}>{cls}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Board</label>
-                    <select value={filters.board} onChange={(e) => setFilters({...filters, board: e.target.value})} className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm">
-                      {boards.map(b => <option key={b} value={b}>{b}</option>)}
                     </select>
                   </div>
                 </div>

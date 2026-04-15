@@ -75,13 +75,23 @@ export const LandingPage = () => {
               <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 sm:p-8">
                 <div className="relative">
                   <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input type="text" placeholder="Search for books, notes..." onKeyPress={(e) => e.key === 'Enter' && e.target.value && (window.location.href = `/browse?search=${encodeURIComponent(e.target.value)}`)} className="w-full pl-10 pr-4 py-3 rounded-xl text-gray-900 text-base focus:ring-2 focus:ring-yellow-300 focus:outline-none" />
+                  <input type="text" placeholder="Search for books, notes..." 
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.target.value.trim()) {
+                        window.location.href = `/browse?search=${encodeURIComponent(e.target.value.trim())}`;
+                      }
+                    }}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl text-gray-900 text-base focus:ring-2 focus:ring-yellow-300 focus:outline-none" />
                 </div>
                 <div className="mt-4">
                   <p className="text-blue-100 mb-2 text-sm">Popular categories:</p>
                   <div className="flex flex-wrap gap-2">
-                    {categories.slice(0, 4).map((category) => (
-                      <span key={category} onClick={() => window.location.href = `/browse?category=${category}`} className="px-3 py-1 bg-white/20 rounded-full text-xs sm:text-sm hover:bg-white/30 cursor-pointer transition-colors">{category}</span>
+                    {categories.map((category) => (
+                      <span
+                        key={category}
+                        onClick={() => window.location.href = `/browse?search=${encodeURIComponent(category)}`}
+                        className="px-3 py-1 bg-white/20 rounded-full text-xs sm:text-sm hover:bg-white/30 cursor-pointer transition-colors"
+                      >{category}</span>
                     ))}
                   </div>
                 </div>

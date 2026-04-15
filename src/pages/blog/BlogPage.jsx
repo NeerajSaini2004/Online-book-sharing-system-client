@@ -60,6 +60,15 @@ export const BlogPage = () => {
 
   const handlePublishArticle = async (e) => {
     e.preventDefault();
+
+    const badWords = ['sex', 'porn', 'nude', 'adult', 'xxx', 'fuck', 'shit', 'abuse', 'hate', 'violence'];
+    const contentToCheck = `${newArticle.title} ${newArticle.content}`.toLowerCase();
+    const hasBadWord = badWords.some(word => contentToCheck.includes(word));
+    if (hasBadWord) {
+      alert('⚠️ Your article contains inappropriate content. Please remove it before publishing.');
+      return;
+    }
+
     try {
       await apiService.createBlog({
         title: newArticle.title,
